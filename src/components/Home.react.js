@@ -713,6 +713,7 @@ class Home extends Component {
         <div className={"PanelHeader"}> ■ Canvas
           <span className={"PanelClose draggableCancel"} onClick={ctx.onRemovelayoutItem.bind(ctx, "canvas")}>X</span>
         </div>
+
         <Canvas />
       </div>);
     }
