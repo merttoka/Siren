@@ -57,7 +57,7 @@ class REPL {
         // -- Message Stack --
         let cycleNumber = 0;
         let subCycleNumber = 0;
-        let cycleOffset = 7;
+        let cycleOffset = 9;
         let cycleStack = [[]];
 
 

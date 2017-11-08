@@ -28,7 +28,7 @@ export default function sketch (p) {
   };
 
   p.draw = function () {
-    p.background(27, 25); // Menubar Background Color
+    p.background(27); // Menubar Background Color
 
     if(cycleStack !== undefined && cycleStack !== null) {
       for (var k = 0; k < cycleStack.length; k++) {
@@ -41,14 +41,14 @@ export default function sketch (p) {
             // Average ASCII value of word
             let averageASCII = 0;
             cycleStack[k][i]['s'].toUpperCase().split('').forEach(function(alphabet) {
-                averageASCII += alphabet.charCodeAt(0);
+              averageASCII += alphabet.charCodeAt(0);
             });
             averageASCII /= cycleStack[k][i]['s'].split('').length;
 
             for(let j = 0 ; j < cycleStack[k][i].t.length; j++) {
               let cellW = 5;
-              let x  = p.map(cycleStack[k][i]['t'][j]['time']%10.,
-                            0, 10,
+              let x  = p.map(cycleStack[k][i]['t'][j]['time']%cycleOffset,
+                            0, cycleOffset,
                             0, p.width);
 
               p.colorMode(p.HSL, 360, 255, 255);
@@ -60,30 +60,15 @@ export default function sketch (p) {
                      p.map(j, 0, cycleStack[k][i].t.length, 80, 255));
               p.rect(x-cellW*0.5, y, cellW, cellH);
               p.colorMode(p.RGB);
+
+              // if (cycleStack[k][i]['t'][j]['cycle']%1.0 === 0) {
+              //   p.fill(200);
+              //   p.rect(x-2, 0, 4, p.height);
+              // }
             }
           }
         }
       }
-
-      // const cycleDuration = ((1.0/p.float(cycleInfo.cps))*cycleOffset)*1000;
-      // const timeslider_x = p.map(p.millis(),
-      //                            localCycleStartTime, localCycleStartTime+cycleDuration,
-      //                            0, p.width);
-
-      // p.noStroke();
-      // for(let i = 0 ; i < cycleOffset+1; i++) {
-      //     let w  = p.width/cycleOffset;
-      //     let x  = i    *w;
-      //     // let x_ = (i+1)*w;
-      //     p.fill(27);
-      //     p.rect(x + w*0.05, p.height-4, w-w*0.1, 2);
-      //     p.rect(x-1, 0, 2, p.height);
-      // }
-
-      // const timeslider_w = 5;
-      // p.fill(60, 50);
-      // p.rect(timeslider_x-timeslider_w*0.5, 0, timeslider_w, p.height);
-
     }
 
   };
