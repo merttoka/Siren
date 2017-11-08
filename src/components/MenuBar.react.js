@@ -4,6 +4,10 @@ import store from '../store';
 import io from 'socket.io-client';
 import _ from 'lodash';
 
+
+import P5Wrapper from 'react-p5-wrapper';
+import sketch from './sketches/tempo';
+
 import './style/MenuBar.css'
 
 import { GitHubLogin, logout, chokeClick, resetClick,
@@ -33,7 +37,10 @@ class MenuBar extends Component {
       socket_sc: io('http://localhost:3006/'),  // Port 3005 is skipped because
       socket_tick: io('http://localhost:3003/'),// a HTC Vive process is using it
       cycleInfo: [],
-      cycleTime: 0
+      cycleTime: 0,
+      cycleNumber: 0,
+      subCycleNumber: 0,
+      cycleOffset: 0
     }
   }
 
@@ -50,13 +57,14 @@ class MenuBar extends Component {
       ctx.setState({boot: 0, tidalMenu: false})
     });
     socket_sc.on("sclog", data => {
-      const message = data.sclog;
-      if(message.type === '/play2'){
-        store.dispatch(saveScOutputMessage(message));
-        console.log(message.time, message.vals);
-        // ctx.setState({cycleInfo: message.vals, cycleTime: message.time});
-      }
-      store.dispatch(dCon(data));
+      ctx.setState({cycleInfo: data.sclog,
+                    cycleNumber: data.number,
+                    subCycleNumber: data.subCycleNumber,
+                    cycleOffset: data.cycleOffset});
+      // store.dispatch(saveScOutputMessage(data.sclog));
+
+
+      // store.dispatch(dCon(data));
       if(_.startsWith(data.sclog, 'SIREN')) {
         ctx.setState({boot: 1, tidalMenu: true})
       }
@@ -193,6 +201,14 @@ class MenuBar extends Component {
       <div style={{display: 'flex', displayDirection: 'row'}}>
         <div className={'Logo'}>
         {<img role="presentation" src={require('../assets/logo.svg')}  height={35} width={35}/> }
+        </div>
+        <div>
+          <P5Wrapper sketch={sketch}
+                     cycleStack={ctx.state.cycleInfo}
+                     cycleOffset={ctx.state.cycleOffset}
+                     cycleNumber={ctx.state.cycleNumber}
+                     subCycleNumber={ctx.state.subCycleNumber}
+                     />
         </div>
       </div>
       <div className={ctx.props.user.user.email ? 'enabledView' : 'disabledView'} style={{display: 'flex', flexDirection: 'row', height: 40}}>

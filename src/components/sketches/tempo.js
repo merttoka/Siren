@@ -1,112 +1,85 @@
 import _ from 'lodash';
 
 export default function sketch (p) {
-  let cycleInfo,
-      timestamp;
-
-  let cycleNumber = 0;
-  let cycleStack = [];
-
-  let localCycleStartTime = 0;
-
-  let width = 600, height = 80;
+  let cycleStack, cycleOffset,
+  cycleNumber,
+  subCycleNumber;
+  // timestamp;
 
   p.setup = function () {
-    p.createCanvas(width, height);
+    p.createCanvas(600, 80);
   };
 
-  p.windowResized = function() {
-    p.resizeCanvas(width, height);
-  }
-
   p.myCustomRedrawAccordingToNewPropsHandler = function (props) {
-    if (props.width && props.height) {
-      width = props.width;
-      height = props.height;
-      p.resizeCanvas(width, height);
-    }
-
-    if (props.cycleInfo && props.cycleTime) {
-      cycleInfo = props.cycleInfo;
-      timestamp = props.cycleTime;
-
-      // MOD AL --- DAHA UZUN OLSUN
-      if(p.int(cycleInfo.cycle) > cycleNumber) {
-        cycleNumber = p.int(cycleInfo.cycle);
-        console.log('RESET::before', cycleStack);
-        cycleStack = [];
-        localCycleStartTime = p.millis();
-        console.log('RESET::after ', cycleStack);
-        cycleStack[0] = {
-          's': cycleInfo.s,
-          't': [ {'time': timestamp,
-                  'floating': p.float(cycleInfo.cycle) % 1.0,
-                  'delta': p.float(cycleInfo.delta)
-                 } ]
-        };
-      }
-      else {
-        var object = _.find(cycleStack, ['s', cycleInfo.s]);
-        if (object !== undefined) {
-          if(object.t[object.t.length-1].time !== timestamp)
-            object.t[object.t.length] = {'time': timestamp,
-                                          'floating': p.float(cycleInfo.cycle) % 1.0,
-                                          'delta': p.float(cycleInfo.delta)
-                                        }
-        }
-        else {
-          cycleStack[cycleStack.length] = {
-            's': cycleInfo.s,
-            't': [ {'time': timestamp,
-                    'floating': p.float(cycleInfo.cycle) % 1.0,
-                    'delta': p.float(cycleInfo.delta)
-                   } ]
-          };
-        }
-      }
+    if (props.cycleStack) {
+      cycleStack = props.cycleStack;
+      cycleOffset= props.cycleOffset;
+      cycleNumber = props.cycleNumber;
+      subCycleNumber = props.subCycleNumber;
     }
   };
 
   p.draw = function () {
     p.background(27, 25); // Menubar Background Color
 
-    if(cycleInfo !== undefined && cycleInfo.cps !== undefined) {
-      for(var i = 0 ; i < cycleStack.length; i++) {
-        const cellH = (p.height/cycleStack.length);
-        const y = i*cellH;
-        // const y = i*cellH+cellH/2;
+    if(cycleStack !== undefined) {
+      for (var k = 0; k < cycleStack.length; k++) {
+        if(cycleStack[k] !== undefined) {
 
-        // Average ASCII value of word
-        var averageASCII = 0;
-        cycleStack[i]['s'].toUpperCase().split('').forEach(function(alphabet) {
-            averageASCII += alphabet.charCodeAt(0);
-        });
-        averageASCII /= cycleStack[i]['s'].split('').length;
+          for(let i = 0 ; i < cycleStack[k].length; i++) {
+            let cellH = (p.height/cycleStack[k].length);
+            let y = i*cellH;
 
-        for(var j = 0 ; j < cycleStack[i].t.length; j++) {
-          const cellW = (p.width/cycleStack[i]['t'].length);
-          const x  = p.map(cycleStack[i]['t'][j]['floating'], 0, 1, 0, p.width-0);
+            // Average ASCII value of word
+            let averageASCII = 0;
+            cycleStack[k][i]['s'].toUpperCase().split('').forEach(function(alphabet) {
+                averageASCII += alphabet.charCodeAt(0);
+            });
+            averageASCII /= cycleStack[k][i]['s'].split('').length;
 
-          p.colorMode(p.HSL, 360, 255, 255);
+            for(let j = 0 ; j < cycleStack[k][i].t.length; j++) {
+              let cellW = 5;
+              // let cellW = ((p.width/cycleOffset)/cycleStack[k][i]['t'].length);
+              // let x  = p.map(cycleStack[k][i]['t'][j]['cycle']-cycleNumber,
+              //                0, cycleOffset,
+              //                0, p.width);
 
-          // since most characters are between 64-90
-          p.fill(p.map(averageASCII, 62, 90, 0, 360),
-                 p.map(i, 0, cycleStack.length, 80, 255),
-                 p.map(j, 0, cycleStack[i].t.length, 80, 255));
-          p.rect(x, y, cellW, cellH);
-          p.colorMode(p.RGB);
+             let x  = p.map(cycleStack[k][i]['t'][j]['time']%10.,
+                            0, 10,
+                            0, p.width);
+
+              p.colorMode(p.HSL, 360, 255, 255);
+
+              // since most characters are between 64-90
+              p.fill(p.map(averageASCII, 62, 90, 0, 360),
+                     p.map(i, 0, cycleStack[k].length, 80, 255),
+                     p.map(j, 0, cycleStack[k][i].t.length, 80, 255));
+              p.rect(x-cellW*0.5, y, cellW, cellH);
+              p.colorMode(p.RGB);
+            }
+          }
         }
       }
 
-      const cycleDuration = (1.0/p.float(cycleInfo.cps))*1000;
-      const timeslider_x = p.map(p.millis(),
-                                 localCycleStartTime, localCycleStartTime+cycleDuration,
-                                 0, p.width);
-      const timeslider_w = 5;
-      p.fill(50, 50);
-      p.rect(timeslider_x-timeslider_w*0.5, 0, timeslider_w, p.height);
+      // const cycleDuration = ((1.0/p.float(cycleInfo.cps))*cycleOffset)*1000;
+      // const timeslider_x = p.map(p.millis(),
+      //                            localCycleStartTime, localCycleStartTime+cycleDuration,
+      //                            0, p.width);
+      p.noStroke();
+      for(let i = 0 ; i < cycleOffset+1; i++) {
+          let w  = p.width/cycleOffset;
+          let x  = i    *w;
+          let x_ = (i+1)*w;
+          p.fill(27);
+          p.rect(x + w*0.05, p.height-4, w-w*0.1, 2);
+          p.rect(x-1, 0, 2, p.height);
+      }
+      // const timeslider_w = 5;
+      // p.fill(60, 50);
+      // p.rect(timeslider_x-timeslider_w*0.5, 0, timeslider_w, p.height);
 
     }
+
   };
 
 };

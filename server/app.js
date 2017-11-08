@@ -55,6 +55,12 @@ class REPL {
         self.sc = sclang;
         // console.log('options: ', sclang);
 
+        // -- Message Stack --
+        let cycleNumber = 0;
+        let subCycleNumber = 0;
+        let cycleOffset = 7;
+        let cycleStack = [[]];
+
         var dconSC = socketIo.listen(3006);
         // var dconUnity = socketIo.listen(3007);
         sclang.on('stdout', function(d) {
@@ -73,12 +79,54 @@ class REPL {
               time = _.toNumber(_.trim(match[0].substring(5)));
             }
 
-            const obj = {type: _.trim(msg[0]),
-                         time: time,
-                         vals: _.fromPairs(_.chunk(_.drop(msg), 2))}
+            if (_.trim(msg[0]) === '/play2') {
+              let cycleInfo = _.fromPairs(_.chunk(_.drop(msg), 2))
+              let cycleTime = time
+              //
+              // dconSC.sockets.emit('sclog', {sclog: {cycleInfo: cycleInfo,
+              //                                       cycleTime: cycleTime}});
 
-            dconSC.sockets.emit('sclog', {sclog: obj});
-            // dconUnity.sockets.emit('sclog', {sclog: obj});
+              let obj = { 'time': cycleTime,
+                          'cycle': _.toInteger(cycleInfo.cycle),
+                          'delta': _.toNumber(cycleInfo.delta)
+                        }
+
+              if(_.toInteger(cycleInfo.cycle) - cycleOffset > cycleNumber) {
+                cycleNumber = _.toInteger(cycleInfo.cycle);
+                console.log('RESET::before', cycleStack);
+                cycleStack = [];
+                console.log('RESET::after ', cycleStack);
+              }
+
+              if (_.toInteger(cycleInfo.cycle) > subCycleNumber) {
+                subCycleNumber = _.toInteger(cycleInfo.cycle);
+                cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber] = [];
+                cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber][0] = {
+                  's': cycleInfo.s,
+                  't': [ obj ]
+                };
+              }
+              else {
+                var object = _.find(cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber],
+                                    ['s', cycleInfo.s]);
+                if (object !== undefined) {
+                  if(object.t[object.t.length-1].time !== cycleTime)
+                    object.t[object.t.length] = obj;
+                }
+                else {
+                  cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber]
+                            [cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber].length] = {
+                    's': cycleInfo.s,
+                    't': [ obj ]
+                  };
+                }
+              }
+              dconSC.sockets.emit('sclog', {sclog: cycleStack,
+                                            number: cycleNumber,
+                                            subCycleNumber: subCycleNumber,
+                                            cycleOffset: cycleOffset});
+              // dconUnity.sockets.emit('sclog', {sclog: obj});
+            }
           }
         });
 
