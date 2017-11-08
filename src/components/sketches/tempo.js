@@ -6,11 +6,19 @@ export default function sketch (p) {
       cycleNumber,
       subCycleNumber;
 
+  let _w, _h;
+
   p.setup = function () {
     p.createCanvas(1080, 95);
   };
 
   p.myCustomRedrawAccordingToNewPropsHandler = function (props) {
+    if (props.width && props.height && (_w !== props.width || _h !== props.height)) {
+      _w = props.width;
+      _h = props.height;
+      p.resizeCanvas(_w, _h);
+    }
+
     if (props.cycleStack) {
       cycleStack = props.cycleStack;
       cycleOffset= props.cycleOffset;
@@ -38,11 +46,6 @@ export default function sketch (p) {
             averageASCII /= cycleStack[k][i]['s'].split('').length;
 
             for(let j = 0 ; j < cycleStack[k][i].t.length; j++) {
-              // let cellW = ((p.width/cycleOffset)/cycleStack[k][i]['t'].length);
-              // let x  = p.map(cycleStack[k][i]['t'][j]['cycle']-cycleNumber,
-              //                0, cycleOffset,
-              //                0, p.width);
-
               let cellW = 5;
               let x  = p.map(cycleStack[k][i]['t'][j]['time']%10.,
                             0, 10,

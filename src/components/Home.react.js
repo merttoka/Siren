@@ -484,12 +484,9 @@ class Home extends Component {
         j.step = x.h - 1;
         var newVals = [];
         for(var a = 0 ; a < j.step; a++){
-          if(j.vals[a]!==undefined){
-            newVals[a] = j.vals[a];
-          }
-          else
-            newVals[a] = ''
-      }
+          if(j.vals[a]!==undefined)  newVals[a] = j.vals[a];
+          else                       newVals[a] = ''
+        }
         j.vals = newVals;
         const sceneKey = _.findKey(ctx.props.matrices, ['matName', j.scene]);
         fbupdatechannelinscene('Matrices', j, sceneKey);
@@ -709,7 +706,7 @@ class Home extends Component {
       </div>);
     }
     else if (layoutItem.i === 'canvas') {
-      return layoutItem.isVisible && (<div key={'canvas'} ref={'canvas'} className={layoutVisibility} data-grid={getGridParameters('canvas')} >
+      return layoutItem.isVisible && (<div key={'canvas'} className={layoutVisibility} id={'canvasLayout'} data-grid={getGridParameters('canvas')} >
         <div className={"PanelHeader"}> ■ Canvas
           <span className={"PanelClose draggableCancel"} onClick={ctx.onRemovelayoutItem.bind(ctx, "canvas")}>X</span>
         </div>

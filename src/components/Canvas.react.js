@@ -27,7 +27,6 @@ class Canvas extends Component {
     const ctx = this;
     const { socket_sc } = ctx.state;
 
-    // Move these to canvas.react and send boot and tidalMenu with props
     socket_sc.on('connect', (reason) => {
       console.log("connect: ", reason);
       store.dispatch(saveScBootInfo({boot: 1, tidalMenu: true}));
@@ -48,12 +47,25 @@ class Canvas extends Component {
     })
   }
 
+  updateDimensions() {
+    const element = document.getElementById('canvasLayout');
+    if(element && element !== null){
+      const w = element.clientWidth;
+      const h = element.clientHeight;
+
+      return {w: w, h: h-25};
+    }
+  }
+
   render() {
     const ctx = this;
-    // const canvasLayout = _.find(ctx.props.layout.windows, ['i', 'canvas']);
+
+    let dimensions = ctx.updateDimensions();
 
     return (<div>
       <P5Wrapper sketch={sketch}
+                 width={dimensions ? dimensions.w: 600}
+                 height={dimensions ? dimensions.h: 90}
                  cycleStack={ctx.state.cycleInfo}
                  cycleOffset={ctx.state.cycleOffset}
                  cycleNumber={ctx.state.cycleNumber}
