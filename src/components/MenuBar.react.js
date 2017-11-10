@@ -10,7 +10,7 @@ import { GitHubLogin, logout, chokeClick, resetClick,
          initTidalConsole, sendScPattern, saveScBootInfo,
          startClick, stopClick} from '../actions'
 
-var keymaster = require('keymaster');
+let keymaster = require('keymaster');
 
 class MenuBar extends Component {
   constructor(props) {
@@ -35,6 +35,8 @@ class MenuBar extends Component {
   componentDidMount(props,state){
     const ctx = this;
     const { socket_tick } = ctx.state;
+
+
 
     socket_tick.on('connect', (reason) => {
       console.log("Port 3003 Connected: ", reason);
@@ -103,7 +105,7 @@ class MenuBar extends Component {
     }
     else {
       const scdstartfile = ctx.props.user.user.config.scd_start
-      var scdstartfileAdjusted;
+      let scdstartfileAdjusted;
 
       // Windows
       if (_.indexOf(scdstartfile, '\\') !== -1) {
@@ -156,7 +158,7 @@ class MenuBar extends Component {
     }
 
     // needs improvement
-    var serverStatusClass = 'ServerStatus';
+    let serverStatusClass = 'ServerStatus';
     if (!serversListening) {
       serverStatusClass += ' inactive';
     }
