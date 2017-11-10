@@ -141,6 +141,7 @@ class REPL {
                   };
                 }
               }
+
               dconSC.sockets.emit('/sclog', {sclog: cycleStack,
                                              number: cycleNumber,
                                              subCycleNumber: subCycleNumber,

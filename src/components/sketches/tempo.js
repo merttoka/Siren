@@ -28,7 +28,7 @@ export default function sketch (p) {
   };
 
   p.draw = function () {
-    p.background(27); // Menubar Background Color
+    p.background(20, 100); // Menubar Background Color
 
     if(cycleStack !== undefined && cycleStack !== null) {
       for (var k = 0; k < cycleStack.length; k++) {

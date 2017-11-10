@@ -55,6 +55,8 @@ class MenuBar extends Component {
       ctx.setState({serversListening: false});
     });
 
+    store.dispatch(saveScBootInfo({boot: 0, tidalMenu: false}));
+
     keymaster('ctrl+enter', ctx.toggleClick.bind(ctx));
     keymaster('shift+enter', ctx.stopTimer.bind(ctx));
   }
