@@ -57,7 +57,7 @@ class REPL {
         // -- Message Stack --
         let cycleNumber = 0;
         let subCycleNumber = 0;
-        let cycleOffset = 9;
+        let cycleOffset = 7;
         let cycleStack = [[]];
 
 
@@ -106,11 +106,11 @@ class REPL {
               };
               udpPort.send(unityMessage);
 
-              let obj = { 'time': cycleTime,
-                          'cycle': _.toInteger(cycleInfo.cycle),
-                          'delta': _.toNumber(cycleInfo.delta)
-                        }
+              let segmentCoefficient = 12;
+              cycleInfo['time'] = cycleTime
+              let obj = cycleInfo;
 
+              // TODO RECORD
               if(_.toInteger(cycleInfo.cycle) - cycleOffset > cycleNumber) {
                 cycleNumber = _.toInteger(cycleInfo.cycle);
                 console.log('RESET::before', cycleStack);
@@ -118,26 +118,36 @@ class REPL {
                 console.log('RESET::after ', cycleStack);
               }
 
+              // cycle beginning subcyclenumber = 0
               if (_.toInteger(cycleInfo.cycle) > subCycleNumber) {
                 subCycleNumber = _.toInteger(cycleInfo.cycle);
+
+                let t = _.times(segmentCoefficient, _.stubObject);
+                t[0] = obj;
+
                 cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber] = [];
                 cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber][0] = {
                   's': cycleInfo.s,
-                  't': [ obj ]
+                  't': t
                 };
               }
+              // subcyclenumber > 1
               else {
+                let index = _.toInteger((_.toNumber(cycleInfo.cycle)%1.0)*segmentCoefficient);
+
                 let object = _.find(cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber],
                                     ['s', cycleInfo.s]);
                 if (object !== undefined) {
                   if(object.t[object.t.length-1].time !== cycleTime)
-                    object.t[object.t.length] = obj;
+                    object.t[index] = obj;
                 }
                 else {
+                  let t = _.times(segmentCoefficient, _.stubObject);
+                  t[index] = obj;
                   cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber]
                             [cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber].length] = {
                     's': cycleInfo.s,
-                    't': [ obj ]
+                    't': t
                   };
                 }
               }

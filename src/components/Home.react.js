@@ -158,7 +158,7 @@ class Home extends Component {
   }
   componentDidUpdate(prevProps, prevState) {
     const ctx = this;
-    
+
     if(prevProps !== ctx.props){
       ctx.setState({storedPatterns:ctx.props.globalparams.storedPatterns});
     }
@@ -226,11 +226,11 @@ class Home extends Component {
     const {selectedCellMain, copyCell} = ctx.state;
     let selectedCells =  ctx.props.cell.selectedCells;
     let channels = ctx.props.channel;
-    
+
     let temparrb = [];
     for (var a = 0 ; a < selectedCells.length; a++){
       let selch = selectedCells[a].split('_')
-      _.each(Object.values(channels), function(ch) {  
+      _.each(Object.values(channels), function(ch) {
           if (ch.cid === parseInt(selch[0])) {
             let obj = {
               name: ch.name,
@@ -240,7 +240,7 @@ class Home extends Component {
               cid: ch.cid,
               key: ch.key
             }
-            temparrb[a] = obj; 
+            temparrb[a] = obj;
           }
         })
       }
@@ -257,19 +257,19 @@ class Home extends Component {
     const { activeMatrix, ukey } = ctx.state;
     const sceneKey = _.findKey(ctx.props.matrices, ['matName', activeMatrix]);
 
-    
+
     console.log(selectedCells, "TARGETS");
     console.log(vals, "VALS");
     console.log(selectedCellMain, "MAIN");
 
     let temparr = vals;
-    
+
     for (var a = 0 ; a < selectedCells.length; a++){
       let selch = selectedCells[a].split('_')
       if(vals[parseInt(selch[0])][parseInt(selch[1])]!== undefined){
         if(selectedCellMain[a]['val'] !== undefined){
             //temparr[parseInt(selch[0])][parseInt(selch[1])] = selectedCellMain[a].val;
-            _.each(Object.values(channels), function(ch) {  
+            _.each(Object.values(channels), function(ch) {
               if (ch.cid === parseInt(selch[0])) {
                 let ncell = {
                   name: ch.name,
@@ -278,46 +278,46 @@ class Home extends Component {
                   sChan: parseInt(selch[0]),
                   cid: ch.cid,
                   key: ch.key
-                  
+
                 }
                 console.log("FINAL OBJECT", ncell);
                 temparr[ncell['sChan']][ncell['index']] = ncell['val'];
                 //const c_cell = { cell_value: ncell.val, cid: ncell.cid, c_key: ncell.key, cell_index: ncell.index};
-                
+
                 const nc = { vals: temparr[ncell['sChan']], key: ncell['key'] };
                 fbupdatechannelinscene('Matrices', nc, sceneKey);
                 store.dispatch(pasteCell(temparr));
                // this.setState({ ukey: Math.random() });
                 //store.dispatch(bootCells(c_cell));
-                
-                
+
+
               }
             })
-            
+
           }
 
-          
+
       }
-      
-      
+
+
     }
 
     ctx.setState({copyCell:false})
   }
-    
 
 
-    
-    
+
+
+
     // const sceneKey = _.findKey(ctx.props.matrices, ['matName', ctx.props.active]);
-    
-    
 
 
 
 
 
-  
+
+
+
   // Global Parameters
   handleGlobalTransformations = event => {
     const body=event.target.value
@@ -341,7 +341,7 @@ class Home extends Component {
     const {tidalServerLink,globalCommands,
           globalTransformations,storedPatterns} = ctx.state;
     const channels = ctx.props.channel;
-    
+
 
     if(event.keyCode === 13 && event.ctrlKey){
       ctx.executionCss(event);
@@ -367,7 +367,7 @@ class Home extends Component {
   }
   handleGlobalsqDuration = event => {
     const ctx=this;
-    
+
     ctx.setState({globalsq: event.target.value});
   }
   ////////////////////////////// HANDLERS ////////////////////////////
@@ -470,18 +470,18 @@ class Home extends Component {
           vals: ch.vals
         };
       })
-     
+
       if ( checkSceneName(matName, items) ) {
         let snd = Object.values(items).length;
-        
-      
+
+
         let skey = fbcreateMatrix(ctx.state.modelName, { matName, patterns, channels, sceneIndex: snd, uid, storedGlobals });
         store.dispatch(globalStore(globals, storedPatterns));
 
         let obj = fbcreatechannelinscene('Matrices', nc, skey)
         nc['key'] = obj;
         //store.dispatch(createChannel(nc));
-      
+
         ctx.setState({sceneIndex: snd, storedGlobals: globals});
         ctx.setState({activeMatrix: matName});
       }
@@ -883,7 +883,7 @@ class Home extends Component {
           <span className={"PanelClose draggableCancel"} onClick={ctx.onRemovelayoutItem.bind(ctx, "canvas")}>X</span>
         </div>
 
-        <Canvas />
+        <Canvas activeMatrix={ctx.state.activeMatrix}/>
       </div>);
     }
     else if (layoutItem.i === 'scenes') {
@@ -1028,7 +1028,7 @@ class Home extends Component {
 
   ////////////////////////////// GLOBALS ////////////////////////////
 
-  
+
   consoleSubmit(tidalServerLink, value){
     store.dispatch(consoleSubmit(tidalServerLink, value));
   }

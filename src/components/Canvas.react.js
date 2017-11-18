@@ -41,6 +41,7 @@ class Canvas extends Component {
                     subCycleNumber: data.subCycleNumber,
                     cycleOffset: data.cycleOffset});
 
+          console.log(data.sclog);
       if(_.startsWith(data.sclog, 'SIREN')) {
         store.dispatch(saveScBootInfo({boot: 1, tidalMenu: true}));
       }
@@ -66,6 +67,7 @@ class Canvas extends Component {
       <P5Wrapper sketch={sketch}
                  width={dimensions ? dimensions.w: 600}
                  height={dimensions ? dimensions.h: 90}
+                 activeMatrix={ctx.props.activeMatrix}
                  cycleStack={ctx.state.cycleInfo}
                  cycleOffset={ctx.state.cycleOffset}
                  cycleNumber={ctx.state.cycleNumber}
