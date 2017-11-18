@@ -19,7 +19,8 @@ class Canvas extends Component {
       cycleInfo: [],                             // a HTC Vive process is using it
       cycleNumber: 0,
       subCycleNumber: 0,
-      cycleOffset: 0
+      cycleOffset: 0,
+      resolution: 1
     }
   }
 
@@ -39,9 +40,11 @@ class Canvas extends Component {
       ctx.setState({cycleInfo: data.sclog,
                     cycleNumber: data.number,
                     subCycleNumber: data.subCycleNumber,
-                    cycleOffset: data.cycleOffset});
+                    cycleOffset: data.cycleOffset,
+                    resolution: data.resolution
+                  });
 
-          console.log(data.sclog);
+          // console.log(data.sclog);
       if(_.startsWith(data.sclog, 'SIREN')) {
         store.dispatch(saveScBootInfo({boot: 1, tidalMenu: true}));
       }
@@ -63,7 +66,7 @@ class Canvas extends Component {
 
     let dimensions = ctx.updateDimensions();
 
-    return (<div>
+    return (<div className={"draggableCancel"}>
       <P5Wrapper sketch={sketch}
                  width={dimensions ? dimensions.w: 600}
                  height={dimensions ? dimensions.h: 90}
@@ -71,6 +74,7 @@ class Canvas extends Component {
                  cycleStack={ctx.state.cycleInfo}
                  cycleOffset={ctx.state.cycleOffset}
                  cycleNumber={ctx.state.cycleNumber}
+                 resolution={ctx.state.resolution}
                  subCycleNumber={ctx.state.subCycleNumber}/>
     </div>);
   }
