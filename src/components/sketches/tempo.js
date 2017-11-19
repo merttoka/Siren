@@ -7,12 +7,10 @@ export default function sketch (p) {
   let message,
       totalCycleCount = 8,
       cycleResolution = 12,
-      sampleResolution = 4,
       cycleIndex = 0,
       subCycleIndex = 0;
 
   // data management
-  let grid = [];
   let samples = [];
   let startCycleNumber = 0;
   let activeMatrix = '';
@@ -20,6 +18,7 @@ export default function sketch (p) {
   // interaction variables
   let mouseX, mouseY;
   let _w, _h;
+  let draw_w, draw_h; 
   let isDraw = true;
   let isInteract = false;
   let isLabels = true;
@@ -42,6 +41,8 @@ export default function sketch (p) {
     if (props.width && props.height && (_w !== props.width || _h !== props.height)) {
       _w = props.width;
       _h = props.height;
+      draw_w = _w - 40;
+      draw_h = _h;
       p.resizeCanvas(_w, _h);
     }
 
@@ -55,7 +56,6 @@ export default function sketch (p) {
       if(activeMatrix !== props.activeMatrix) {
         startCycleNumber = 0;
         samples = [];
-        grid = [];
         activeMatrix = props.activeMatrix;
       }
     }
@@ -72,71 +72,71 @@ export default function sketch (p) {
         startCycleNumber = _.toInteger(message.cycle);
         
         samples = [];
-        grid = [];
         
-        console.log('refresh: ', samples, grid);
+        console.log('refresh: ', samples);
       }
       
-      // sample[i] = (16 * 12) x n-array
-      
+      // sample[i] = {s: 'bd', n: [{no: 0, time: [{}x96]]}
+
       cycleIndex = _.toInteger(_.toNumber(message.cycle) - startCycleNumber);
       subCycleIndex = _.toInteger(_.toNumber(message.cycle)%1.0 * cycleResolution);
       
       let _n = message.n === undefined ? 0 : _.toInteger(message.n);
       let xcoord = cycleIndex*cycleResolution+subCycleIndex;
       
-      let _index = _.indexOf(samples, message.s);
+      let _index = _.findIndex(samples, ['s', message.s]);
+      // console.log(' ## _index', _index);
       if(_index === -1){
-        samples[samples.length] = message.s;
-        samples.sort();
-      }
-        
-      if(grid[xcoord] === undefined) grid[xcoord] = []
+        // console.log(' # adding sample: ', message.s);
       
-
-
-
-
-
-      
-      let samplesObject = _.find(grid[xcoord], ['s', message.s]); 
-      if(samplesObject === undefined) {
-        grid[xcoord][grid[xcoord].length] = {s: message.s, n: [_n], msg: [message]};
+        samples[samples.length] = {s: message.s, n: [{no: _n, time: []}]};
+        samples = _.sortBy(samples, 's');
       }
       else {
-        let subSampleIndex = _.indexOf(samplesObject.n, _n);
-        if(subSampleIndex === -1) {
-          subSampleIndex = samplesObject.n.length; 
-          samplesObject.n[subSampleIndex] = _n;
-          samplesObject.msg[subSampleIndex] = message;
+        // console.log(' # modifying sample: ', message.s);
+        
+        let sampleNumberArray = samples[_index].n;
+        let _subindex = _.findIndex(sampleNumberArray, ['no', _n]);
+        // console.log('_subindex', _subindex);
+      
+        if(_subindex === -1) {
+          // console.log(' # adding n to '+ message.s+': ', _n);
+        
+          let _t = [];
+          _t[xcoord] = message;
+          samples[_index].n[sampleNumberArray.length] = {no: _n, time: _t}
         }
         else {
-          samplesObject.msg[subSampleIndex] = message;
+          // console.log(' # modifying n in '+ message.s+': ', _n);
+
+          let _t = samples[_index].n[_subindex].time;
+          _t[xcoord] = message;
+          samples[_index].n[_subindex].time = _t;
         }
       }
     }
   };
 
   // KEYBOARD INTERACTIONS
-  // p.keyPressed = function () {
-  //   if (p.keyCode === p.SHIFT)  isInteract = true;
-  // }
-  // p.keyReleased = function () {
-  //   if (p.keyCode === p.SHIFT)  isInteract = false;
-  // }
-  // p.keyTyped = function () {
-  //   if (p.key === 'l')  isLabels = !isLabels;
-  //   if (p.key === ' ') {
-  //     isPlay = !isPlay;
-  //     isPaused = !isPaused;
+  p.keyPressed = function () {
+    if (p.keyCode === p.SHIFT)  isInteract = true;
+  }
+  p.keyReleased = function () {
+    if (p.keyCode === p.SHIFT)  isInteract = false;
+  }
+  p.keyTyped = function () {
+    if (p.key === 'l')  isLabels = !isLabels;
+    // if (p.key === ' ') {
+    //   isPlay = !isPlay;
+    //   isPaused = !isPaused;
 
-  //     if ( isPlay ) {
-  //       store.dispatch(resetClick());
-  //       store.dispatch(consoleSubmit(serverLink, "hush"));
-  //       store.dispatch(sendScPattern(serverLink, "OSCFunc.trace(false);"));
-  //     }
-  //   }
-  // }
+    //   if ( isPlay ) {
+    //     store.dispatch(resetClick());
+    //     store.dispatch(consoleSubmit(serverLink, "hush"));
+    //     store.dispatch(sendScPattern(serverLink, "OSCFunc.trace(false);"));
+    //   }
+    // }
+  }
 
   // MOUSE INTERACTIONS
   p.mouseMoved = function () {
@@ -253,68 +253,115 @@ export default function sketch (p) {
     // Draw
     if (isDraw){
 
-      // console.log(grid, samples);
-      for(let i = 0; i < (totalCycleCount*cycleResolution); i++) {
-        if(grid[i] !== undefined) {
-          for(let j = 0; j < samples.length; j++) {
-            let obj = _.find(grid[i], ['s', samples[j].s])
+      // sample[i] = {s: 'bd', n: [{no: 0, time: [{}x96]]}
+      for(let i = 0; i < samples.length; i++) {
+        let _ns = samples[i].n;
+        
+        let w = p.width/(totalCycleCount*cycleResolution);
+        let h = p.height/(samples.length);
+        
+        for (let j = 0; j < _ns.length; j++) {
+          let _h = h / _ns.length;
 
-            let w = p.width/(totalCycleCount*cycleResolution);
-            let h = p.height/(samples.length);
-            for(let k = 0; obj && k < samples[j].n.length; k++) {
-              if(obj.n[k]){
-                let _h = h / samples[j].n.length;
-                let x = i * w;
-                let y = j * h + _.indexOf(samples[j].n, obj.n[k]) * _h;
+          let y = i * h + j * _h;
+          for (let k = 0; k < (totalCycleCount*cycleResolution); k++) {
+            if (_ns[j].time && _ns[j].time[k]){
+              let x = k * w;
   
-                p.stroke(0);
-                p.fill(200);
-                p.rect(x, y, w, _h);
-              }
+              p.stroke(0);
+              p.fill(200);
+              p.rect(x, y, w, _h);
             }
           }
+        }
+      }        
 
+      
+      // for(let i = 0; i < (totalCycleCount*cycleResolution); i++) {
+      //   if(grid[i] !== undefined) {
+      //     for(let j = 0; j < samples.length; j++) {
+      //       let obj = _.find(grid[i], ['s', samples[j].s])
+
+      //       for(let k = 0; obj && k < samples[j].n.length; k++) {
+      //         if(obj.n[k]){
+      //           let x = i * w;
+                
+      //         }
+      //       }
+      //     }
+
+      //   }
+      // }
+    }
+
+    if (isLabels) {
+      // console.log(samples);
+      for(let i = 0; i < samples.length; i++) {
+        let h = p.height/(samples.length);
+        let y = i * h;
+        p.fill(255, 150);
+        p.rect(0, y+3, 15, h-3);
+        p.push();
+        p.fill(0);
+        p.translate(7, y+h*0.5);
+        p.rotate(p.HALF_PI);
+        // p.textFont("Courier New", 10);
+        // p.textStyle(p.BOLD);
+        p.textAlign(p.CENTER, p.CENTER);
+        p.text(samples[i].s, 0, 0);
+        p.pop();
+        for (let j = 0; j < samples[i].n.length; j++) {
+          let _h = h / samples[i].n.length;
+          p.fill(255, 100);
+          p.rect(17, y+j*_h+2, 15, _h-3);
+          p.push();
+          p.fill(0);
+          p.translate(24, y+j*_h+_h*0.5);
+          p.rotate(p.HALF_PI);
+          // p.textFont("Courier New", 10);
+          // p.textStyle(p.BOLD);
+          p.textAlign(p.CENTER, p.CENTER);
+          p.text(samples[i].n[j].no, 0, 0);
+          p.pop();
+          
+          
         }
       }
     }
 
-    // if (isLabels) {
-    //   // console.log(samples);
-    //   for(let i = 0; i < maxSamples; i++) {
-    //     let h = p.height/(maxSamples);
-    //     let y = i * h;
-    //     p.fill(255, 150);
-    //     p.rect(0, y+3, 15, h-3);
-    //     p.push();
-    //     p.fill(0);
-    //     p.translate(7, y+h*0.5);
-    //     p.rotate(p.HALF_PI);
-    //     p.textFont("Courier New");
-    //     p.textStyle(p.BOLD);
-    //     p.textAlign(p.CENTER, p.CENTER);
-    //     p.text(samples[i], 0, 0);
-    //     p.pop();
+    // const getObject = function(mx, my) {
+    //   let w = p.width/(cycleResolution*totalCycleCount);
+    //   let h = p.height/(samples.length);
+    //   let sampleIndex = _.toInteger(my/h);
+    //   let numbers = samples[sampleIndex].n;
+    //   let _h = h / numbers.length;
+    //   let numberIndex = _.toInteger((my - sampleIndex*h)/_h);
+    //   let x = _.toInteger(p.map(mx, 0, p.width, 0, (cycleResolution*totalCycleCount)));
+    //   return numbers[numberIndex].time[x]    
+    // } 
+    // const getObjectPosition = function(mx, my) {
+    //   let w = p.width/(cycleResolution*totalCycleCount);
+    //   let h = p.height/(samples.length);
+    //   let sampleIndex = _.toInteger(my/h);
+    //   if(samples[sampleIndex]){
+    //     let numbers = samples[sampleIndex].n;
+    //     let _h = h / numbers.length;
+    //     let numberIndex = _.toInteger((my - sampleIndex*h)/_h);
+    //     if(numbers.time[numberIndex]) {
+    //       let x = _.toInteger(p.map(mx, 0, p.width, 0, (cycleResolution*totalCycleCount)));
+    //       return [x, sampleIndex*h+numberIndex*_h, w, _h]    
+    //     }
     //   }
-    // }
+    // } 
 
     // // Selection indicator
     // if(true){
     //   p.stroke(255);
     //   p.noFill();
-    //   let w = p.width/(cycleResolution*totalCycleCount);
-    //   let h = p.height/(maxSamples);
-    //   let x = _.toInteger(p.map(mouseX, 0, p.width, 0, (cycleResolution*totalCycleCount)));
-    //   let y = _.toInteger(p.map(mouseY, 0, p.height, 0, (maxSamples)));
-    //   if(grid[x] && grid[x][y]){
-    //     let z = _.toInteger(p.map(mouseY, y*h, (y+1)*h, 0, grid[x][y].length));
-        
-    //     if(samplesNumbers[y]) {
-    //       let _h = h / samplesNumbers[y].length;
-    //       p.rect(x*w,y*h+z*_h, w,_h);
-    //     }
-    //     else {
-    //       p.rect(x*w,y*h, w,h);
-    //     }
+      
+    //   let pos = getObjectPosition(mouseX, mouseY);
+    //   if(pos) {
+    //     p.rect(pos[0], pos[1], pos[2], pos[3]);
     //   }
     // }
 
