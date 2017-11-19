@@ -883,7 +883,7 @@ class Home extends Component {
           <span className={"PanelClose draggableCancel"} onClick={ctx.onRemovelayoutItem.bind(ctx, "canvas")}>X</span>
         </div>
 
-        <Canvas activeMatrix={ctx.state.activeMatrix}/>
+        <Canvas activeMatrix={ctx.state.activeMatrix} serverLink={ctx.state.tidalServerLink}/>
       </div>);
     }
     else if (layoutItem.i === 'scenes') {

@@ -1,114 +1,142 @@
 import _ from 'lodash';
+import store from '../../store';
+import { consoleSubmit, resetClick, sendScPattern } from '../../actions'
 
 export default function sketch (p) {
-  let cycleStack,
-      cycleOffset,
-      cycleNumber,
-      subCycleNumber,
-      resolution;
+  // primary data
+  let message,
+      totalCycleCount = 8,
+      cycleResolution = 12,
+      sampleResolution = 4,
+      cycleIndex = 0,
+      subCycleIndex = 0;
 
+  // data management
+  let grid = [];
+  let samples = [];
+  let startCycleNumber = 0;
+  let activeMatrix = '';
+    
+  // interaction variables
   let mouseX, mouseY;
   let _w, _h;
-
-  // store sample names inside
-  let max_samples = 5;
-  let samples = _.times(max_samples, _.stubString);
-  let activeMatrix = '';
-
-  let recordedGrid;
-
   let isDraw = true;
   let isInteract = false;
-  let isCleaned = true;
   let isLabels = true;
-
-  let prevSize = cycleOffset;
-
   let dragStart = [0, 0];
   let dragEnd = [0, 0];
+
+  // playback variables
+  let isPlay = false;
+  let isPaused = true;
+  let time = 0;
+  let playbackArray = [];
+  let serverLink = '';
 
   p.setup = function () {
     p.createCanvas(1080, 95);
   };
 
   p.myCustomRedrawAccordingToNewPropsHandler = function (props) {
+    // resizing
     if (props.width && props.height && (_w !== props.width || _h !== props.height)) {
       _w = props.width;
       _h = props.height;
       p.resizeCanvas(_w, _h);
     }
 
+    if (props.serverLink && serverLink !== props.serverLink) {
+      serverLink = props.serverLink;
+      store.dispatch(sendScPattern(serverLink, "~d1 = ~dirt.orbits[0];"));
+    }
+
+    // clear data on scene change
     if (props.activeMatrix) {
       if(activeMatrix !== props.activeMatrix) {
-        samples = _.times(max_samples, _.stubString);
+        startCycleNumber = 0;
+        samples = [];
+        grid = [];
         activeMatrix = props.activeMatrix;
       }
     }
 
-    if (props.cycleStack) {
-      if(cycleStack !== props.cycleStack) {
-        cycleStack = props.cycleStack;
-        cycleOffset= props.cycleOffset+1;
-        cycleNumber = props.cycleNumber;
-        subCycleNumber = props.subCycleNumber;
+    // on message -- form a matrix
+    if (props.message && message !== props.message && props.message.s !== undefined) {
+      message = props.message;
 
-        if(resolution !== props.resolution) {
-          recordedGrid = _.times(props.resolution * cycleOffset, function() {return _.times(max_samples, _.stubObject)});
-          resolution = props.resolution;
+      if (startCycleNumber === 0) {
+        startCycleNumber = _.toInteger(message.cycle)
+      }
+      // clean current view
+      if (startCycleNumber + totalCycleCount - 1 < _.toInteger(message.cycle)) {
+        startCycleNumber = _.toInteger(message.cycle);
+        
+        samples = [];
+        grid = [];
+        
+        console.log('refresh: ', samples, grid);
+      }
+      
+      // sample[i] = (16 * 12) x n-array
+      
+      cycleIndex = _.toInteger(_.toNumber(message.cycle) - startCycleNumber);
+      subCycleIndex = _.toInteger(_.toNumber(message.cycle)%1.0 * cycleResolution);
+      
+      let _n = message.n === undefined ? 0 : _.toInteger(message.n);
+      let xcoord = cycleIndex*cycleResolution+subCycleIndex;
+      
+      let _index = _.indexOf(samples, message.s);
+      if(_index === -1){
+        samples[samples.length] = message.s;
+        samples.sort();
+      }
+        
+      if(grid[xcoord] === undefined) grid[xcoord] = []
+      
+
+
+
+
+
+      
+      let samplesObject = _.find(grid[xcoord], ['s', message.s]); 
+      if(samplesObject === undefined) {
+        grid[xcoord][grid[xcoord].length] = {s: message.s, n: [_n], msg: [message]};
+      }
+      else {
+        let subSampleIndex = _.indexOf(samplesObject.n, _n);
+        if(subSampleIndex === -1) {
+          subSampleIndex = samplesObject.n.length; 
+          samplesObject.n[subSampleIndex] = _n;
+          samplesObject.msg[subSampleIndex] = message;
         }
-
-        // Create Vis Matrix
-        if(cycleStack !== undefined && cycleStack !== null) {
-          if(prevSize > cycleStack.length)  isCleaned = false;
-          for (var k = 0; k < cycleStack.length; k++) {
-            if(cycleStack[k] !== undefined && cycleStack[k] !== null) {
-              for(let i = 0 ; i < cycleStack[k].length; i++) {
-                // Manage sample name array
-                let index = _.indexOf(samples, cycleStack[k][i]['s']);
-                if (index === -1 && _.compact(samples).length >= max_samples) {
-                  samples[_.compact(samples).length] = cycleStack[k][i]['s'];
-                  max_samples = samples.length;
-                }
-                if (index === -1 && _.compact(samples).length < max_samples) {
-                  samples[_.compact(samples).length] = cycleStack[k][i]['s'];
-                }
-                index = _.indexOf(samples, cycleStack[k][i]['s'])
-
-                if (index !== -1) {
-                  /////
-                  // y == index
-                  /////
-                  for(let j = 0 ; j < cycleStack[k][i].t.length; j++) {
-                    if(_.keysIn(cycleStack[k][i]['t'][j]).length !== 0) {
-
-                      /////
-                      // x == k*resolution+j  // cycleOffset*resolution
-                      /////
-                      if (recordedGrid[index])
-                      recordedGrid[k*resolution+j][index] = cycleStack[k][i]['t'][j];
-                    }
-                  }
-                }
-              }
-            }
-          }
-          prevSize = cycleStack.length;
+        else {
+          samplesObject.msg[subSampleIndex] = message;
         }
       }
-
     }
   };
 
   // KEYBOARD INTERACTIONS
-  p.keyPressed = function () {
-    if (p.keyCode === p.SHIFT)  isInteract = true;
-  }
-  p.keyReleased = function () {
-    if (p.keyCode === p.SHIFT)  isInteract = false;
-  }
-  p.keyTyped = function () {
-    if (p.key === 'l')  isLabels = !isLabels;
-  }
+  // p.keyPressed = function () {
+  //   if (p.keyCode === p.SHIFT)  isInteract = true;
+  // }
+  // p.keyReleased = function () {
+  //   if (p.keyCode === p.SHIFT)  isInteract = false;
+  // }
+  // p.keyTyped = function () {
+  //   if (p.key === 'l')  isLabels = !isLabels;
+  //   if (p.key === ' ') {
+  //     isPlay = !isPlay;
+  //     isPaused = !isPaused;
+
+  //     if ( isPlay ) {
+  //       store.dispatch(resetClick());
+  //       store.dispatch(consoleSubmit(serverLink, "hush"));
+  //       store.dispatch(sendScPattern(serverLink, "OSCFunc.trace(false);"));
+  //     }
+  //   }
+  // }
 
   // MOUSE INTERACTIONS
   p.mouseMoved = function () {
@@ -116,140 +144,185 @@ export default function sketch (p) {
     mouseY = p.mouseY;
   }
 
-  p.mousePressed = function () {
-    dragStart = [mouseX, mouseY];
-  }
-  p.mouseReleased = function () {
-    dragEnd = [p.mouseX, p.mouseY];
+  // p.mousePressed = function () {
+  //   dragStart = [mouseX, mouseY];
+  // }
+  // p.mouseReleased = function () {
+  //   dragEnd = [p.mouseX, p.mouseY];
 
-    let x = _.toInteger(p.map(dragStart[0], 0, p.width, 0, (resolution*cycleOffset)))
-    let y = _.toInteger(p.map(dragStart[1], 0, p.height, 0, (max_samples)))
+  //   let h = p.height/(maxSamples);
 
-    if (_.keysIn(recordedGrid[x][y]).length !== 0) {
-      let _x = _.toInteger(p.map(dragEnd[0], 0, p.width, 0, (resolution*cycleOffset)))
-      let _y = _.toInteger(p.map(dragEnd[1], 0, p.height, 0, (max_samples)))
+  //   let x = _.toInteger(p.map(dragStart[0], 0, p.width, 0, (cycleResolution*totalCycleCount)))
+  //   let y = _.toInteger(p.map(dragStart[1], 0, p.height, 0, (maxSamples)))
+  //   if(grid[x][y]) {
+  //     let z = _.toInteger(p.map(dragStart[1], h*y, h*(y+1), 0, grid[x][y].length))
+  
+  //     if (grid[x][y].length !== 0) {
+  //       let _x = _.toInteger(p.map(dragEnd[0], 0, p.width, 0, (cycleResolution*totalCycleCount)))
+  //       let _y = _.toInteger(p.map(dragEnd[1], 0, p.height, 0, (maxSamples)))
+  //       let _z = _.toInteger(p.map(dragEnd[1], h*_y, h*(_y+1), 0, grid[_x][_y].length))
+  
+  //       let obj = grid[x][y][z];
+  //       obj.s = samples[_y];
+  //       obj.n = samplesNumbers[_y][_z];
+  //       grid[x][y][z] = {};
+  //       grid[_x][_y][_z] = obj;
 
-      let obj = recordedGrid[x][y];
-      obj.s = samples[_y];
-      recordedGrid[x][y] = {};
-      recordedGrid[_x][_y] = obj;
-    }
-  }
+  //       console.log(_z);
+  //     }
+  //   }
+  // }
 
-  p.mouseClicked = function () {
-    if(isInteract){
-      let x = _.toInteger(p.map(p.mouseX, 0, p.width, 0, (resolution*cycleOffset)))
-      let y = _.toInteger(p.map(p.mouseY, 0, p.height, 0, (max_samples)))
-
-      let obj = {};
-      if (_.keysIn(recordedGrid[x][y]).length === 0) {
-        obj = {
-          's': samples[y],
-          'n': 1,
-          'cps' : 1,
-          'cycle': p.map(x%resolution, 0, resolution, 0, 1),
-          'speed': 1,
-          'delay': 0,
-          'delaytime' : 0,
-          'end': 1,
-          'gain': 1
-        };
-      }
-      recordedGrid[x][y] = obj;
-    }
-  }
+  // p.mouseClicked = function () {
+  //   if(isInteract){
+  //     let h = p.height/(maxSamples);
+      
+  //     let x = _.toInteger(p.map(p.mouseX, 0, p.width, 0, (cycleResolution*totalCycleCount)))
+  //     let y = _.toInteger(p.map(p.mouseY, 0, p.height, 0, (maxSamples)))
+  //     if(grid[x][y]) {
+  //       let z = _.toInteger(p.map(p.mouseY, h*y, h*(y+1), 0, grid[x][y].length))
+  
+  //       let obj = {};
+  //       if (grid[x][y].length === 0) {
+  //         obj = {
+  //           's': samples[y],
+  //           'n': 0,
+  //           'cps' : 1,
+  //           'cycle': p.map(x%cycleResolution, 0, cycleResolution, 0, 1),
+  //           'speed': 1,
+  //           'delay': 0,
+  //           'delaytime' : 0,
+  //           'end': 1,
+  //           'gain': 1
+  //         };
+  //       }
+  //       grid[x][y][z] = obj;
+  //     }
+  //   }
+  // }
 
   p.draw = function () {
-    p.background(27);
+    p.background(30);
+
+    // Get max sample number
+    // let maxSamples = 
 
     // Grid lines
-    if(cycleOffset){
-      for(let rows = 0; rows < max_samples; rows++) {
-        p.stroke(255, 5);
-        p.line(0, rows*(p.height/max_samples), p.width, rows*(p.height/max_samples));
+    if(true){
+      for(let rows = 0; rows < samples.length; rows++) {
+        p.stroke(255, 15);
+        p.line(0, rows*(p.height/samples.length), p.width, rows*(p.height/samples.length));
       }
-      for(let cols = 0; cols < resolution*cycleOffset; cols++) {
-        p.stroke(255, cols%resolution === 0 ? 20 : 5);
-        p.line(cols*(p.width / (cycleOffset*resolution)), 0,
-        cols*(p.width / (cycleOffset*resolution)), p.height);
+      for(let cols = 0; cols < cycleResolution*totalCycleCount; cols++) {
+        p.stroke(255, cols%cycleResolution === 0 ? 30 : 5);
+        p.line(cols*(p.width / (totalCycleCount*cycleResolution)), 0,
+               cols*(p.width / (totalCycleCount*cycleResolution)), p.height);
+        
+        // Highlight some portions of the grid
+
       }
     }
+
+      // delete array on tmex 
+    // let time_x = p.map(time%(totalCycleCount*1000), 0, totalCycleCount*1000, 0, p.width);
+    // p.stroke(150);
+    // p.line(time_x, 0, time_x, p.height);
+    // if (!isPaused) {
+    //   let item_x = _.toInteger(p.map(time_x, 0, p.width, 0, (totalCycleCount*cycleResolution)));
+
+    //   let objs = grid[item_x]
+    //   if(objs) {
+    //     for(let a = 0; a < objs.length; a++) {
+    //       for(let b = 0; b < objs[a].length; b++) {
+    //         if(objs[a][b] && _.indexOf(playbackArray, objs[a][b]) === -1)
+    //         {
+    //           playbackArray[playbackArray.length] = objs[a][b];
+                          
+    //           // [ 'latency', 'cps', 'sound', 'offset', 'begin', 'end', 'speed', 'pan', 'velocity', 'vowel', 'cutoff', 'resonance', 'accelerate', 'shape', 'krio', 'gain', 'cut', 'delay', 'delaytime', 'delayfeedback', 'crush', 'coarse', 'hcutoff', 'hresonance', 'bandqf', 'bandq', 'unit' ]
+    //           let pattern = "sound: \"" + objs[a][b].s + ":"+ objs[a][b].n +"\"";
+    //           store.dispatch(sendScPattern(serverLink, "~d1.(("+ pattern +"));"));
+
+    //           console.log(objs[a][b]);
+    //         }
+    //       }
+    //     }
+    //   }
+    //   time += 1000/p.frameRate();
+    // }
 
     // Draw
     if (isDraw){
-      for(let i = 0; i < resolution*cycleOffset; i++) {
-        for(let j = 0; j < max_samples; j++) {
-          if(_.keysIn(recordedGrid[i][j]).length !== 0) {
-            let w = p.width/(resolution*cycleOffset);
-            let h = p.height/(max_samples);
-            let x = i * w;
-            let y = j * h;
-            let obj = recordedGrid[i][j];
-            let gain = recordedGrid[i][j].gain !== undefined ? _.toNumber(recordedGrid[i][j].gain) : 1.0
-            let speed = recordedGrid[i][j].speed !== undefined ? _.toNumber(recordedGrid[i][j].speed) : 1.0
 
-            // Average ASCII value of word
-            let averageASCII = 0;
-            obj.s.toUpperCase().split('').forEach(function(alphabet) {
-              averageASCII += alphabet.charCodeAt(0);
-            });
-            averageASCII /= obj.s.split('').length;
+      // console.log(grid, samples);
+      for(let i = 0; i < (totalCycleCount*cycleResolution); i++) {
+        if(grid[i] !== undefined) {
+          for(let j = 0; j < samples.length; j++) {
+            let obj = _.find(grid[i], ['s', samples[j].s])
 
-            p.colorMode(p.HSL, 360, 255, 255);
-            p.noStroke();
-            p.fill(p.map(averageASCII, 62, 90, 0, 360),
-                    p.map(speed, -1, 2, 20, 255),
-                    p.map(gain, 0, 1.4, 80, 255));
-            p.rect(x, y, w, h);
-            p.colorMode(p.RGB);
+            let w = p.width/(totalCycleCount*cycleResolution);
+            let h = p.height/(samples.length);
+            for(let k = 0; obj && k < samples[j].n.length; k++) {
+              if(obj.n[k]){
+                let _h = h / samples[j].n.length;
+                let x = i * w;
+                let y = j * h + _.indexOf(samples[j].n, obj.n[k]) * _h;
+  
+                p.stroke(0);
+                p.fill(200);
+                p.rect(x, y, w, _h);
+              }
+            }
           }
+
         }
       }
-
     }
 
-    if (isLabels) {
-      for(let i = 0; i < max_samples; i++) {
-        let h = p.height/(max_samples);
-        let y = i * h;
-        p.fill(255, 150);
-        p.rect(0, y+3, 15, h-3);
-        p.push();
-        p.fill(0);
-        p.translate(7, y+h*0.5);
-        p.rotate(p.HALF_PI);
-        p.textFont("Courier New");
-        p.textStyle(p.BOLD);
-        p.textAlign(p.CENTER, p.CENTER);
-        p.text(samples[i], 0, 0);
-        p.pop();
-      }
-    }
+    // if (isLabels) {
+    //   // console.log(samples);
+    //   for(let i = 0; i < maxSamples; i++) {
+    //     let h = p.height/(maxSamples);
+    //     let y = i * h;
+    //     p.fill(255, 150);
+    //     p.rect(0, y+3, 15, h-3);
+    //     p.push();
+    //     p.fill(0);
+    //     p.translate(7, y+h*0.5);
+    //     p.rotate(p.HALF_PI);
+    //     p.textFont("Courier New");
+    //     p.textStyle(p.BOLD);
+    //     p.textAlign(p.CENTER, p.CENTER);
+    //     p.text(samples[i], 0, 0);
+    //     p.pop();
+    //   }
+    // }
 
-    // Selection indicator
-    if(cycleOffset){
-      p.stroke(255);
-      p.noFill();
-      let w = p.width/(resolution*cycleOffset);
-      let h = p.height/(max_samples);
-      let x = _.toInteger(p.map(mouseX, 0, p.width, 0, (resolution*cycleOffset))) * w;
-      let y = _.toInteger(p.map(mouseY, 0, p.height, 0, (max_samples))) * h;
-      p.rect(x,y,w,h);
-    }
+    // // Selection indicator
+    // if(true){
+    //   p.stroke(255);
+    //   p.noFill();
+    //   let w = p.width/(cycleResolution*totalCycleCount);
+    //   let h = p.height/(maxSamples);
+    //   let x = _.toInteger(p.map(mouseX, 0, p.width, 0, (cycleResolution*totalCycleCount)));
+    //   let y = _.toInteger(p.map(mouseY, 0, p.height, 0, (maxSamples)));
+    //   if(grid[x] && grid[x][y]){
+    //     let z = _.toInteger(p.map(mouseY, y*h, (y+1)*h, 0, grid[x][y].length));
+        
+    //     if(samplesNumbers[y]) {
+    //       let _h = h / samplesNumbers[y].length;
+    //       p.rect(x*w,y*h+z*_h, w,_h);
+    //     }
+    //     else {
+    //       p.rect(x*w,y*h, w,h);
+    //     }
+    //   }
+    // }
 
     // Interaction
     if (isInteract) {
       p.stroke(255);
       p.line(mouseX, 0, mouseX, p.height);
       p.noStroke();
-    }
-
-
-    // needs cleaning
-    if (!isCleaned) {
-      p.background(27);
-      recordedGrid = _.times(resolution * cycleOffset, function() {return _.times(max_samples, _.stubObject)});
-      isCleaned = true;
     }
   };
 };

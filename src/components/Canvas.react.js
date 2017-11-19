@@ -16,11 +16,7 @@ class Canvas extends Component {
     super(props)
     this.state = {
       socket_sc: io('http://localhost:3006/'),  // Port 3005 is skipped because
-      cycleInfo: [],                             // a HTC Vive process is using it
-      cycleNumber: 0,
-      subCycleNumber: 0,
-      cycleOffset: 0,
-      resolution: 1
+      trigger_msg: {}                           // a HTC Vive process is using it
     }
   }
 
@@ -37,15 +33,10 @@ class Canvas extends Component {
       store.dispatch(saveScBootInfo({boot: 0, tidalMenu: false}));
     });
     socket_sc.on("/sclog", data => {
-      ctx.setState({cycleInfo: data.sclog,
-                    cycleNumber: data.number,
-                    subCycleNumber: data.subCycleNumber,
-                    cycleOffset: data.cycleOffset,
-                    resolution: data.resolution
-                  });
+      ctx.setState({trigger_msg: data.trigger});
 
-          // console.log(data.sclog);
-      if(_.startsWith(data.sclog, 'SIREN')) {
+      // console.log("SCLog: ", data.trigger);
+      if(_.startsWith(data.trigger, 'SIREN')) {
         store.dispatch(saveScBootInfo({boot: 1, tidalMenu: true}));
       }
     })
@@ -71,11 +62,8 @@ class Canvas extends Component {
                  width={dimensions ? dimensions.w: 600}
                  height={dimensions ? dimensions.h: 90}
                  activeMatrix={ctx.props.activeMatrix}
-                 cycleStack={ctx.state.cycleInfo}
-                 cycleOffset={ctx.state.cycleOffset}
-                 cycleNumber={ctx.state.cycleNumber}
-                 resolution={ctx.state.resolution}
-                 subCycleNumber={ctx.state.subCycleNumber}/>
+                 message={ctx.state.trigger_msg}
+                 serverLink={ctx.props.serverLink}/>
     </div>);
   }
 }
