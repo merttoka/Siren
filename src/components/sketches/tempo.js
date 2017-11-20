@@ -173,39 +173,38 @@ export default function sketch (p) {
   //   }
   // }
 
-  // p.mouseClicked = function () {
-  //   if(isInteract){
-  //     let h = p.height/(maxSamples);
+  p.mouseClicked = function () {
+    if(isInteract){
+      let h = p.height/(samples.length);
       
-  //     let x = _.toInteger(p.map(p.mouseX, 0, p.width, 0, (cycleResolution*totalCycleCount)))
-  //     let y = _.toInteger(p.map(p.mouseY, 0, p.height, 0, (maxSamples)))
-  //     if(grid[x][y]) {
-  //       let z = _.toInteger(p.map(p.mouseY, h*y, h*(y+1), 0, grid[x][y].length))
+      let x = _.toInteger(p.map(p.mouseX, 0, p.width, 0, (cycleResolution*totalCycleCount)))
+      let y = _.toInteger(p.map(p.mouseY, 0, p.height, 0, (samples.length)))
+      if(samples[y]) {
+        let z = _.toInteger(p.map(p.mouseY, h*y, h*(y+1), 0, samples[y].n.length))
   
-  //       let obj = {};
-  //       if (grid[x][y].length === 0) {
-  //         obj = {
-  //           's': samples[y],
-  //           'n': 0,
-  //           'cps' : 1,
-  //           'cycle': p.map(x%cycleResolution, 0, cycleResolution, 0, 1),
-  //           'speed': 1,
-  //           'delay': 0,
-  //           'delaytime' : 0,
-  //           'end': 1,
-  //           'gain': 1
-  //         };
-  //       }
-  //       grid[x][y][z] = obj;
-  //     }
-  //   }
-  // }
+        let obj = {};
+        if (samples[y].n[z].time[x] === undefined) {
+          obj = {
+            's': samples[y].s,
+            'n': samples[y].n[z].no,
+            'cps' : 1,
+            'cycle': p.map(x%cycleResolution, 0, cycleResolution, 0, 1),
+            'speed': 1,
+            'delay': 0,
+            'delaytime' : 0,
+            'end': 1,
+            'gain': 1
+          };
+          samples[y].n[z].time[x] = obj;
+        }else{
+          delete samples[y].n[z].time[x];
+        }
+      }
+    }
+  }
 
   p.draw = function () {
     p.background(30);
-
-    // Get max sample number
-    // let maxSamples = 
 
     // Grid lines
     if(true){
@@ -274,28 +273,10 @@ export default function sketch (p) {
             }
           }
         }
-      }        
-
-      
-      // for(let i = 0; i < (totalCycleCount*cycleResolution); i++) {
-      //   if(grid[i] !== undefined) {
-      //     for(let j = 0; j < samples.length; j++) {
-      //       let obj = _.find(grid[i], ['s', samples[j].s])
-
-      //       for(let k = 0; obj && k < samples[j].n.length; k++) {
-      //         if(obj.n[k]){
-      //           let x = i * w;
-                
-      //         }
-      //       }
-      //     }
-
-      //   }
-      // }
+      }
     }
 
     if (isLabels) {
-      // console.log(samples);
       for(let i = 0; i < samples.length; i++) {
         let h = p.height/(samples.length);
         let y = i * h;
@@ -323,8 +304,6 @@ export default function sketch (p) {
           p.textAlign(p.CENTER, p.CENTER);
           p.text(samples[i].n[j].no, 0, 0);
           p.pop();
-          
-          
         }
       }
     }
@@ -339,37 +318,39 @@ export default function sketch (p) {
     //   let x = _.toInteger(p.map(mx, 0, p.width, 0, (cycleResolution*totalCycleCount)));
     //   return numbers[numberIndex].time[x]    
     // } 
-    // const getObjectPosition = function(mx, my) {
-    //   let w = p.width/(cycleResolution*totalCycleCount);
-    //   let h = p.height/(samples.length);
-    //   let sampleIndex = _.toInteger(my/h);
-    //   if(samples[sampleIndex]){
-    //     let numbers = samples[sampleIndex].n;
-    //     let _h = h / numbers.length;
-    //     let numberIndex = _.toInteger((my - sampleIndex*h)/_h);
-    //     if(numbers.time[numberIndex]) {
-    //       let x = _.toInteger(p.map(mx, 0, p.width, 0, (cycleResolution*totalCycleCount)));
-    //       return [x, sampleIndex*h+numberIndex*_h, w, _h]    
-    //     }
-    //   }
-    // } 
+    const getObjectPosition = function(mx, my) {
+      let w = p.width/(cycleResolution*totalCycleCount);
+      let h = p.height/(samples.length);
+      let sampleIndex = _.toInteger(my/h);
+      if(samples[sampleIndex]){
+        let numbers = samples[sampleIndex].n;
+        let _h = h / numbers.length;
+        let numberIndex = _.toInteger((my - sampleIndex*h)/_h);
+        if(numbers[numberIndex].time) {
+          let x = _.toInteger(p.map(mx, 0, p.width, 0, (cycleResolution*totalCycleCount)));
+          if(numbers[numberIndex].time[x])
+            return [x*w, sampleIndex*h+numberIndex*_h, w, _h]    
+        }
+      }
+    } 
 
-    // // Selection indicator
-    // if(true){
-    //   p.stroke(255);
-    //   p.noFill();
+    // Selection indicator
+    if(true){
+      p.stroke(255, 0, 0);
+      if (isInteract) p.fill(255, 0, 0, 50) 
+      else            p.noFill();
       
-    //   let pos = getObjectPosition(mouseX, mouseY);
-    //   if(pos) {
-    //     p.rect(pos[0], pos[1], pos[2], pos[3]);
-    //   }
-    // }
+      let pos = getObjectPosition(mouseX, mouseY);
+      if(pos) {
+        p.rect(pos[0], pos[1], pos[2], pos[3]);
+      }
+    }
 
     // Interaction
-    if (isInteract) {
-      p.stroke(255);
-      p.line(mouseX, 0, mouseX, p.height);
-      p.noStroke();
-    }
+    // if (isInteract) {
+    //   p.stroke(255);
+    //   p.line(mouseX, 0, mouseX, p.height);
+    //   p.noStroke();
+    // }
   };
 };
