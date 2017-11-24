@@ -1,8 +1,6 @@
 import _ from 'lodash';
 import store from '../../store';
 import { sendScPattern } from '../../actions'
-import { resolve } from 'url';
-import { loadavg } from 'os';
 
 export default function sketch (p) {
   // primary data
@@ -34,6 +32,8 @@ export default function sketch (p) {
   let pg = null;
 
   let c, gl, program;
+
+  let canvasWorker;
 
   // Helper Functions
   const getObject = function(sample_name, sample_number, time) {
@@ -196,6 +196,17 @@ export default function sketch (p) {
   p.setup = function () {
     p.createCanvas(1080, 95);
     
+    canvasWorker = new Worker("./src/components/sketches/tworker.js");
+    canvasWorker.postMessage({type : "resetCanvasTimer"});
+    canvasWorker.onmessage = function(e) {
+      if (e.data.type === "seq") {
+        time = e.data.time;
+      }
+      else if(e.data.type === "sendPattern") {
+        store.dispatch(sendScPattern(serverLink, e.data.pattern));        
+      }
+    }
+
     // p.createCanvas(1080, 95, p.WEBGL);
 
     // c = document.getElementById("defaultCanvas0");
@@ -259,6 +270,18 @@ export default function sketch (p) {
     }
 
     if (props.play !== undefined) {
+      if (isPlay !== props.play && props.play === true) {
+        console.log('P5 TWORKER -- start');        
+        canvasWorker.postMessage({type : "startCanvasTimer", 
+                                  cycle: totalCycleCount, 
+                                  resolution: cycleResolution,
+                                  samples: samples});
+      }
+      else if (isPlay !== props.play && props.play === false) {
+        console.log('P5 TWORKER -- reset');
+        canvasWorker.postMessage({type : "resetCanvasTimer"});
+      }
+
       isPlay = props.play;
     }
 
@@ -375,9 +398,9 @@ export default function sketch (p) {
         }
       }
       if (!isInteract) {
-        time = p.mouseX;
+        time = _.toInteger(p.map(p.mouseX, 0, p.width, 0, (cycleResolution*totalCycleCount)));
 
-        resetExecution(_.toInteger(p.map(time, 0, p.width, 0, (cycleResolution*totalCycleCount))))
+        resetExecution(time)
       }
     }
   }
@@ -453,29 +476,18 @@ export default function sketch (p) {
       }
 
       p.stroke(150);
-      p.line(time, 0, time, p.height);
-      if (isPlay) {
-        // console.log(isPlay, time);
-        if(time > p.width) {
-          time -= p.width;
+      let _time = p.map(time, 0, totalCycleCount*cycleResolution, 0, p.width);
+      p.line(_time, 0, _time, p.height);
+      // if (isPlay) {
+      //   // console.log(isPlay, time);
+      //   if(time > p.width) {
+      //     time -= p.width;
 
-          resetExecution(0);        
-        }
+      //     resetExecution(0);        
+      //   }
 
-        let item_x = _.toInteger(p.map(time, 0, p.width, 0, (totalCycleCount*cycleResolution)));
-        for(let a = 0; a < samples.length; a++) {
-          for(let b = 0; b < samples[a].n.length; b++) {
-            if (samples[a].n[b].time[item_x] && samples[a].n[b].time[item_x].executed === false) {
-              samples[a].n[b].time[item_x].executed = true;
-
-              let pattern = "sound: \"" + samples[a].s + ":"+ samples[a].n[b].no +"\"";
-              store.dispatch(sendScPattern(serverLink, "~d1.(("+ pattern +"));"));
-            }
-          }
-        }
-
-        time += p.width/(p.frameRate() * totalCycleCount)
-      }
+      //   time += p.width/(p.frameRate() * totalCycleCount)
+      // }
 
       // Draw
       if (isDraw){
