@@ -1,6 +1,7 @@
 // import _ from 'lodash';
 
-export default function sketch (p) {
+/* eslint-disable */
+export default function vis_sketch (p) {
   let cycleStack,
       cycleOffset,
       cycleNumber,

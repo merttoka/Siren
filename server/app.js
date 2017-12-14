@@ -106,46 +106,48 @@ class REPL {
               };
               udpPort.send(unityMessage);
 
-              let obj = { 'time': cycleTime,
-                          'cycle': _.toInteger(cycleInfo.cycle),
-                          'delta': _.toNumber(cycleInfo.delta)
-                        }
+              dconSC.sockets.emit('/sclog', {sclog: {time: time, cycleInfo}});
 
-              if(_.toInteger(cycleInfo.cycle) - cycleOffset > cycleNumber) {
-                cycleNumber = _.toInteger(cycleInfo.cycle);
-                console.log('RESET::before', cycleStack);
-                cycleStack = [];
-                console.log('RESET::after ', cycleStack);
-              }
-
-              if (_.toInteger(cycleInfo.cycle) > subCycleNumber) {
-                subCycleNumber = _.toInteger(cycleInfo.cycle);
-                cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber] = [];
-                cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber][0] = {
-                  's': cycleInfo.s,
-                  't': [ obj ]
-                };
-              }
-              else {
-                let object = _.find(cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber],
-                                    ['s', cycleInfo.s]);
-                if (object !== undefined) {
-                  if(object.t[object.t.length-1].time !== cycleTime)
-                    object.t[object.t.length] = obj;
-                }
-                else {
-                  cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber]
-                            [cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber].length] = {
-                    's': cycleInfo.s,
-                    't': [ obj ]
-                  };
-                }
-              }
-
-              dconSC.sockets.emit('/sclog', {sclog: cycleStack,
-                                             number: cycleNumber,
-                                             subCycleNumber: subCycleNumber,
-                                             cycleOffset: cycleOffset});
+              // let obj = { 'time': cycleTime,
+              //             'cycle': _.toInteger(cycleInfo.cycle),
+              //             'delta': _.toNumber(cycleInfo.delta)
+              //           }
+              //
+              // if(_.toInteger(cycleInfo.cycle) - cycleOffset > cycleNumber) {
+              //   cycleNumber = _.toInteger(cycleInfo.cycle);
+              //   console.log('RESET::before', cycleStack);
+              //   cycleStack = [];
+              //   console.log('RESET::after ', cycleStack);
+              // }
+              //
+              // if (_.toInteger(cycleInfo.cycle) > subCycleNumber) {
+              //   subCycleNumber = _.toInteger(cycleInfo.cycle);
+              //   cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber] = [];
+              //   cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber][0] = {
+              //     's': cycleInfo.s,
+              //     't': [ obj ]
+              //   };
+              // }
+              // else {
+              //   let object = _.find(cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber],
+              //                       ['s', cycleInfo.s]);
+              //   if (object !== undefined) {
+              //     if(object.t[object.t.length-1].time !== cycleTime)
+              //       object.t[object.t.length] = obj;
+              //   }
+              //   else {
+              //     cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber]
+              //               [cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber].length] = {
+              //       's': cycleInfo.s,
+              //       't': [ obj ]
+              //     };
+              //   }
+              // }
+              //
+              // dconSC.sockets.emit('/sclog', {sclog: cycleStack,
+              //                                number: cycleNumber,
+              //                                subCycleNumber: subCycleNumber,
+              //                                cycleOffset: cycleOffset});
 
             }
           }

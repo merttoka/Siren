@@ -547,7 +547,7 @@ export const sendPatterns = (server, channel, stepValue, scenePatterns, click, g
 					transitionHolder = k + " $ ";
 				}
 
-				
+
 				 if( channel.type === "SuperCollider"){
 					dispatch({ type: 'UPDATE_SCCOMMAND', payload: newCommand });
 					//this.sendScPattern('localhost:3001', newCommand);
@@ -573,7 +573,7 @@ export const sendPatterns = (server, channel, stepValue, scenePatterns, click, g
 				else {
 					pattern = transitionHolder + newCommand ;
 				}
-				
+
 				return [ pattern ];
 			}
 			else
@@ -601,8 +601,8 @@ export const sendGlobals = (server,storedPatterns,storedGlobals, vals,channels) 
 			}
 
 		const globalindex = getParameters(vals)[0];
+		let pat = [],ch;
 		if(globalindex !== undefined){
-			let pat = [],ch;
 			// command of the pattern
 			let currentglobal = Object.values(storedGlobals[globalindex]);
 			let activeChannels = _.slice(getParameters(vals), 1);
