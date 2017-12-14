@@ -8,7 +8,8 @@
 
   s.waitForBoot {
     ~dirt = SuperDirt(2, s);
-    ~dirt.loadSoundFiles("C:\\Users\\Mert\\Dropbox\\Whalehouse\\99s\\*");	~dirt.loadSoundFiles("C:\\Users\\Mert\\Dropbox\\Whalehouse\\100s\\*");
+    ~dirt.loadSoundFiles("C:\\Users\\Mert\\Dropbox\\Whalehouse\\99s\\*");	
+    ~dirt.loadSoundFiles("C:\\Users\\Mert\\Dropbox\\Whalehouse\\100s\\*");
     "SUPERDIRT LOADED".postln;
 
     s.sync;

@@ -20,7 +20,7 @@ const models = {
       email: 'String',
       name: 'String',
       uid: 'String',
-			layouts: 'Object'
+	  layouts: 'Object'
     }
   },
   Matrices: {
@@ -28,7 +28,7 @@ const models = {
     model: {
       name: 'String',
       patterns: 'Object',
-			channels: 'Object',
+	  channels: 'Object',
       sceneIndex: 'Integer',
       storedGlobals: 'Object',
       uid: 'String'
@@ -393,6 +393,13 @@ export const selectCell = (selectedcell) => {
         dispatch({ type: 'SELECT_CELL', payload: selectedcell });
     };
 }
+
+export const pasteCell = (vals) => {
+    //reducer
+    return dispatch => {
+        dispatch({ type: 'PASTE_CELL', payload: vals });
+    };
+}
 export const updateCell = (cell) => {
     //reducer
     return dispatch => {
@@ -444,7 +451,7 @@ export const consoleSubmit = (server, expression) => {
 export const sendPatterns = (server, channel, stepValue, scenePatterns, click, globalparams) => {
 	return dispatch => {
 		const getFinalPattern = () => {
-			console.log('INDEXJS ', server,channel,stepValue,scenePatterns,click,globalparams);
+			// console.log('INDEXJS ', server,channel,stepValue,scenePatterns,click,globalparams);
 
 			let math = require('mathjs');
 
@@ -669,7 +676,7 @@ export const globalUpdate = (t, c, d) => {
 }
 export const globalStore = (storedG,storedPatterns) => {
 	return {
-		type: 'STORE_GLOBAL', storedGlobals: storedG, storedPatterns: storedPatterns
+		type: 'STORE_GLOBAL', storedGlobals: storedG
 	}
 }
 

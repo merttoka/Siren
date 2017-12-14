@@ -73,6 +73,7 @@
     "react-glslcanvas": "0.0.6",
     "react-grid-layout": "^0.15.0",
     "react-maskedinput": "^4.0.0",
+    "react-motion": "^0.5.2",
     "react-number-editor": "^4.0.2",
     "react-p5-wrapper": "0.0.4",
     "react-perf-tool": "^0.2.2",
