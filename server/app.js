@@ -54,13 +54,6 @@ class REPL {
       supercolliderjs.lang.boot(options).then((sclang) => {
         self.sc = sclang;
 
-        // -- Message Stack --
-        // let cycleNumber = 0;
-        // let subCycleNumber = 0;
-        // let cycleOffset = 7;
-        // let cycleStack = [[]];
-
-
         let dconSC = socketIo.listen(3006);
 
         let osc = require("osc");
@@ -94,7 +87,7 @@ class REPL {
               let cycleInfo = _.fromPairs(_.chunk(_.drop(msg), 2));
               cycleInfo['time'] = time;
 
-              /// Message to Unity
+              // Message to Unity
               let unityMessage = {
                 address: "/siren",
                 args: [
@@ -106,63 +99,8 @@ class REPL {
               };
               udpPort.send(unityMessage);
 
-              /// Message to React frontend
+              // Message to React frontend
               dconSC.sockets.emit('/sclog', {trigger: cycleInfo});
-                                              // number: cycleNumber,
-                                              // subCycleNumber: subCycleNumber,
-                                              // cycleOffset: cycleOffset,
-                                              // resolution: segmentCoefficient});
-              
-
-              // let segmentCoefficient = 12;
-              // cycleInfo['time'] = cycleTime
-              // let obj = cycleInfo;
-
-              // // TODO RECORD
-              // if(_.toInteger(cycleInfo.cycle) - cycleOffset > cycleNumber) {
-              //   cycleNumber = _.toInteger(cycleInfo.cycle);
-              //   console.log('RESET::before', cycleStack);
-              //   cycleStack = [];
-              //   console.log('RESET::after ', cycleStack);
-              // }
-
-              // // cycle beginning subcyclenumber = 0
-              // if (_.toInteger(cycleInfo.cycle) > subCycleNumber) {
-              //   subCycleNumber = _.toInteger(cycleInfo.cycle);
-
-              //   let t = _.times(segmentCoefficient, _.stubObject);
-              //   t[0] = obj;
-
-              //   cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber] = [];
-              //   cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber][0] = {
-              //     's': cycleInfo.s,
-              //     't': t
-              //   };
-              // }
-              // // subcyclenumber > 1
-              // else {
-              //   let index = _.toInteger((_.toNumber(cycleInfo.cycle)%1.0)*segmentCoefficient);
-
-              //   let object = _.find(cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber],
-              //                       ['s', cycleInfo.s]);
-              //   if (object !== undefined) {
-              //     if(object.t[object.t.length-1].time !== cycleTime)
-              //       object.t[object.t.length] = obj;
-              //   }
-              //   else {
-              //     cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber]
-              //               [cycleStack[_.toInteger(cycleInfo.cycle)-cycleNumber].length] = {
-              //       's': cycleInfo.s,
-              //       't': [ obj ]
-              //     };
-              //   }
-              // }
-              //
-              // dconSC.sockets.emit('/sclog', {sclog: cycleStack,
-              //                                number: cycleNumber,
-              //                                subCycleNumber: subCycleNumber,
-              //                                cycleOffset: cycleOffset});
-
             }
           }
         });
@@ -317,6 +255,10 @@ const Siren = () => {
     generateConfig(b_config,reply);
 
     startTidal(b_config, reply);
+  });
+
+  app.post('/processing', (req, reply) => {
+    exec('processing-java --sketch=' + __dirname + '/processing --run');
   });
 
   app.post('/boot', (req, reply) => {

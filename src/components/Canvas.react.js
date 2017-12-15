@@ -13,7 +13,7 @@ import sketch from './sketches/tempo';
 
 import GL from "gl-react";
 import GLReactDOM from "gl-react-dom";
-import { consoleSubmit, resetClick, sendScPattern, saveScBootInfo } from '../actions'
+import { consoleSubmit, resetClick, sendScPattern, saveScBootInfo, startProcessing } from '../actions'
 
 class Canvas extends Component {
   constructor(props) {
@@ -24,7 +24,9 @@ class Canvas extends Component {
       resolution: 12,
       cycles: 8,
       reload: false,
-      play: false
+      play: false,
+      content: 0,
+      maxContent: 3 // 0-vis, 1-shader1, 2-shader2
     }
   }
 
@@ -37,7 +39,7 @@ class Canvas extends Component {
       store.dispatch(saveScBootInfo({boot: 1, tidalMenu: true}));
     });
     socket_sc.on('disconnect', (reason) => {
-      console.log("connect: ", reason);
+      console.log("disconnect: ", reason);
       store.dispatch(saveScBootInfo({boot: 0, tidalMenu: false}));
     });
     socket_sc.on("/sclog", data => {
@@ -64,134 +66,112 @@ class Canvas extends Component {
   render() {
     const ctx = this;
 
-    // let dimensions = ctx.updateDimensions();
-    // let width = dimensions ? dimensions.w: 600;
-    // let height = dimensions ? dimensions.h: 90;
+    // SINGLE MESSAGE STRUCTURE
+    // {time, args}
 
-    // // SINGLE MESSAGE STRUCTURE
-    // // {time, args}
+    // STACK MESSAGE STRUCTURE
+    // 0: Array(2)
+    //   0:
+    //     s: "hh"
+    //     t: Array(1)
+    //       0:
+    //         cycle: 902,
+    //         delta: 0.5,
+    //         time: 901.41357317311
 
-    // // STACK MESSAGE STRUCTURE
-    // // 0: Array(2)
-    // //   0:
-    // //     s: "hh"
-    // //     t: Array(1)
-    // //       0:
-    // //         cycle: 902,
-    // //         delta: 0.5,
-    // //         time: 901.41357317311
-
-    // let msg = ctx.state.cycleInfo;
+    let msg = ctx.state.trigger_msg;
     // console.log(msg);
-    // let time = msg['time'] !== undefined ? msg['time'] : 0;
-    // let rate = Math.sin(time)/2; //msg['cycleInfo'] !== undefined ? _.toNumber(msg['cycleInfo']['delta']) : 0.5;
-    // let depth = msg['cycleInfo'] !== undefined ? _.toNumber(msg['cycleInfo']['delta']) : 0.5;
+    let time = msg['time'] !== undefined ? msg['time'] : 0;
+    let rate = Math.sin(time)/2; //msg['cycleInfo'] !== undefined ? _.toNumber(msg['cycleInfo']['delta']) : 0.5;
+    let depth = msg['cycleInfo'] !== undefined ? _.toNumber(msg['cycleInfo']['delta']) : 0.5;
 
-    // const shaders = GL.Shaders.create({
-    //   blobby: {
-    //     frag: `
-    //       precision highp float;
+    const shaders = GL.Shaders.create({
+      blobby: {
+        frag: `
+          precision highp float;
 
-    //       uniform float time;
-    //       uniform vec2 resolution;
-    //       uniform float depth;
-    //       uniform float rate;
+          uniform float time;
+          uniform vec2 resolution;
+          uniform float depth;
+          uniform float rate;
 
-    //       #define N 16
+          #define N 16
 
-    //       void main( void ) {
-    //         vec2 v = (gl_FragCoord.xy-(resolution*0.5))/min(resolution.y,resolution.x)*10.0;
-    //         float t = time * 0.3,r=2.0;
-    //         for (int i=1;i<N;i++){
-    //           float d = (3.14159265 / float(N))*(float(i)*14.0);
-    //           r += length(vec2(rate*v.y,rate*v.x))+1.21;
-    //           v = vec2(v.x+cos(v.y+cos(r)+d)+cos(t),v.y-sin(v.x+cos(r)+d)+sin(t));
-    //         }
-    //         r = (sin(r*0.09)*0.5)+0.5;
-    //         r = pow(r, depth);
-    //         gl_FragColor = vec4(r,pow(max(r-0.55,0.0)*2.2,2.0),pow(max(r-4.875,0.1)*3.0,6.0), 1.0 );
-    //       }`
+          void main( void ) {
+            vec2 v = (gl_FragCoord.xy-(resolution*0.5))/min(resolution.y,resolution.x)*10.0;
+            float t = time * 0.3,r=2.0;
+            for (int i=1;i<N;i++){
+              float d = (3.14159265 / float(N))*(float(i)*14.0);
+              r += length(vec2(rate*v.y,rate*v.x))+1.21;
+              v = vec2(v.x+cos(v.y+cos(r)+d)+cos(t),v.y-sin(v.x+cos(r)+d)+sin(t));
+            }
+            r = (sin(r*0.09)*0.5)+0.5;
+            r = pow(r, depth);
+            gl_FragColor = vec4(r,pow(max(r-0.55,0.0)*2.2,2.0),pow(max(r-4.875,0.1)*3.0,6.0), 1.0 );
+          }`
 
-    //   },
-    //   sinewave: {
-    //     frag: `
-    //       precision highp float;
+      },
+      sinewave: {
+        frag: `
+          precision highp float;
 
-    //       uniform float time;
-    //       uniform vec2 resolution;
-    //       uniform vec2 colorMult;
-    //       uniform float coeffx;
-    //       uniform float coeffy;
-    //       uniform float coeffz;
+          uniform float time;
+          uniform vec2 resolution;
+          uniform vec2 colorMult;
+          uniform float coeffx;
+          uniform float coeffy;
+          uniform float coeffz;
 
-    //       void main( void ) {
+          void main( void ) {
 
-    //       	vec2 position = gl_FragCoord.xy / resolution.xy;
+          	vec2 position = gl_FragCoord.xy / resolution.xy;
 
-    //       	float color = 0.0;
-    //       	color += sin( position.x * cos( time / 15.0 ) * 10.0 )  +  cos( position.y * cos( time / 15.0 ) * coeffx );
-    //       	color += sin( position.y * sin( time / 10.0 ) * coeffz )  +  cos( position.x * sin( time / 25.0 ) * coeffy );
-    //       	color += sin( position.x * sin( time / 50.0 ) * coeffx )  +  sin( position.y * sin( time / 35.0 ) * coeffz );
+          	float color = 0.0;
+          	color += sin( position.x * cos( time / 15.0 ) * 10.0 )  +  cos( position.y * cos( time / 15.0 ) * coeffx );
+          	color += sin( position.y * sin( time / 10.0 ) * coeffz )  +  cos( position.x * sin( time / 25.0 ) * coeffy );
+          	color += sin( position.x * sin( time / 50.0 ) * coeffx )  +  sin( position.y * sin( time / 35.0 ) * coeffz );
 
-    //       	color *= sin( time / 10.0 ) * 0.5;
+          	color *= sin( time / 10.0 ) * 0.5;
 
-    //       	float r = color;
-    //       	float g = color * colorMult.y;
-    //       	float b = sin( color + time / 2.0 ) * colorMult.x;
+          	float r = color;
+          	float g = color * colorMult.y;
+          	float b = sin( color + time / 2.0 ) * colorMult.x;
 
-    //       	gl_FragColor = vec4(r, g, b, 1.0 );
+          	gl_FragColor = vec4(r, g, b, 1.0 );
 
-    //       }`
-    //   }
-    // });
-    // const Blobby = GL.createComponent(
-    //   ({ time, resolution, depth, rate }) =>
-    //   <GL.Node
-    //     shader={shaders.blobby}
-    //     uniforms={{ time, resolution, depth, rate }}
-    //   />
-    //  );
-    // const Sinewave = GL.createComponent(
-    //    ({ time, resolution, colorMult, coeffx, coeffy, coeffz }) =>
-    //    <GL.Node
-    //      shader={shaders.sinewave}
-    //      uniforms={{ time, resolution, colorMult, coeffx, coeffy, coeffz }}
-    //    />
-    //   );
-    // const {Surface} = GLReactDOM;
-    // // <Blobby time={time}
-    // //   resolution={[width, height]}
-    // //   depth={depth}
-    // //   rate={rate}/>
-    // return (<div>
-    //   <Surface width={width}
-    //            height={height}>
-    //      <Sinewave time={time}
-    //               resolution={[width, height]}
-    //               colorMult={[depth*5, 2-depth*2]}
-    //               coeffx={15*(Math.sin((Math.cos(time)+1)*2)+1)}
-    //               coeffy={3.53*(Math.tan(Math.sqrt(time)*1.4362)+1)+5*(Math.cos(time)+1)}
-    //               coeffz={10.0}/>
-    //   </Surface>
-    const handleClickPlay = event => {
-      ctx.setState({play: true})
-  
-      store.dispatch(resetClick());
-      store.dispatch(consoleSubmit(ctx.props.serverLink, "hush"));
-      store.dispatch(sendScPattern(ctx.props.serverLink, "OSCFunc.trace(false);"));
+          }`
+      }
+    });
+    const Blobby = GL.createComponent(
+      ({ time, resolution, depth, rate }) =>
+      <GL.Node
+        shader={shaders.blobby}
+        uniforms={{ time, resolution, depth, rate }}
+      />
+     );
+    const Sinewave = GL.createComponent(
+       ({ time, resolution, colorMult, coeffx, coeffy, coeffz }) =>
+       <GL.Node
+         shader={shaders.sinewave}
+         uniforms={{ time, resolution, colorMult, coeffx, coeffy, coeffz }}
+       />
+      );
+    
+    const handleClickProcessing = event => {
+      store.dispatch(startProcessing("localhost:3001"));
     }
-    const handleClickPause = event => {
-      ctx.setState({play: false})
-      
-      store.dispatch(sendScPattern(ctx.props.serverLink, "OSCFunc.trace(true);"));
+    const handleClickChange = event => {
+      ctx.setState({content: (ctx.state.content+1) % ctx.state.maxContent});      
     }
 
     let dimensions = ctx.updateDimensions();
+    let width = dimensions ? dimensions.w: 600;
+    let height = dimensions ? dimensions.h: 90;
+    const {Surface} = GLReactDOM;    
     return (<div className={"Canvas draggableCancel"}>
       <div className={'CanvasControls'}>
-        <button className={'Button'} onClick={handleClickPlay}> Play </button>
-        <button className={'Button'} onClick={handleClickPause}> Pause </button>
-        <button className={'Button'} onClick={undefined}> BUTTON </button>
+        <button className={'Button'} onClick={handleClickChange} > {"Change Content ("+ctx.state.content + ")"} </button>
+        <button className={'Button'} onClick={handleClickProcessing} > {"Editor"} </button>
         <div>Cycles: <input className={'Input'} 
                             placeholder={8}
                             onChange={(e) => {ctx.setState({cycles: _.toInteger(e.target.value)})}}/></div>
@@ -203,25 +183,36 @@ class Canvas extends Component {
                                               }>⭯</button>
       </div> 
       <div className={'CanvasSketch'}>
+        {ctx.state.content === 0 && 
         <P5Wrapper sketch={sketch}
                   width={dimensions ? dimensions.w: 600}
                   height={dimensions ? dimensions.h: 90}
                   resolution={ctx.state.resolution ? ctx.state.resolution : 12}
                   cycles={ctx.state.cycles ? ctx.state.cycles : 8}
                   reload={ctx.state.reload}
-                  play={ctx.state.play}
                   activeMatrix={ctx.props.activeMatrix}
-                  message={ctx.state.trigger_msg}
-                  serverLink={ctx.props.serverLink}/>
+                  message={ctx.state.trigger_msg}/>}
+        {ctx.state.content === 1 && 
+        <Surface width={width}
+                 height={height}>
+          <Sinewave time={time}
+                    resolution={[width, height]}
+                    colorMult={[depth*5, 2-depth*2]}
+                    coeffx={15*(Math.sin((Math.cos(time)+1)*2)+1)}
+                    coeffy={3.53*(Math.tan(Math.sqrt(time)*1.4362)+1)+5*(Math.cos(time)+1)}
+                    coeffz={10.0}/>
+        </Surface>}
+        {ctx.state.content === 2 && 
+        <Surface width={width}
+                 height={height}>
+          <Blobby time={time}
+                    resolution={[width, height]}
+                    depth={depth}
+                    rate={rate}/>
+        </Surface>}
+      
       </div>
     </div>);
   }
-  // <P5Wrapper sketch={vis_sketch}
-  //   width={width}
-  //   height={height}
-  //   cycleStack={ctx.state.cycleInfo}
-  //   cycleOffset={ctx.state.cycleOffset}
-  //   cycleNumber={ctx.state.cycleNumber}
-  //   subCycleNumber={ctx.state.subCycleNumber}/>
 }
 export default connect(state => state)(Canvas);

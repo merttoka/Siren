@@ -778,3 +778,14 @@ export function fbsaveconfig(model, uid, config) {
 		models[model].dataSource.child(uid).child("config").update({...config});
 	}
 }
+
+export function startProcessing(server) {
+	return dispatch => {
+		axios.post('http://' + server.replace('http:', '').replace('/', '').replace('https:', '') + '/processing')
+		.then((response) => {
+			// do sth with response
+		}).catch(function (error) {
+			console.error(error);
+		});
+	}
+}
