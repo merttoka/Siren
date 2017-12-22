@@ -19,7 +19,7 @@ class SirenEditorCanvas extends Canvas {
     my = p.mouseY;
     
     if (p.mousePressed && mx >= x && mx < x+w && my >= y && my < y+h){
-      try{
+      //try{
         float _h = h/canvas.numberOfSamples;
         int s_index = int((my-y)/_h);
         
@@ -32,16 +32,42 @@ class SirenEditorCanvas extends Canvas {
         String s = canvas.sampleList.get(s_index).s;
         int    n = canvas.sampleList.get(s_index).notes.get(n_index).n;
         
-        Message m = new Message();
-        m.assignUpdate(s, n, canvas.startCycle + t_index/canvas.cycleResolution);
+        Message m = canvas.getNote(s_index, n_index, (int)t_index);
         
-        if(p.mouseButton == LEFT)
-          canvas.addNote(s, n, m);
+        if(p.mouseButton == LEFT){
+          if(m == null) {
+            m = new Message();
+            m.assignUpdate(s, n, canvas.startCycle + t_index/canvas.cycleResolution);
+            
+            for (int i=0; i < numberOfFieldTextfields; i++) {
+              println(i,'/',numberOfFieldTextfields);
+              if(cp5.get(Textfield.class, "cp5_tf"+i+"_key") != null && 
+                 cp5.get(Textfield.class, "cp5_tf"+i+"_value") != null)
+                  m.addField(cp5.get(Textfield.class, "cp5_tf"+i+"_key").getText(), 
+                             parseFloat(cp5.get(Textfield.class, "cp5_tf"+i+"_value").getText()));
+            }
+            
+            canvas.addNote(s, n, m);
+          }
+          else { 
+            cp5.get(Textfield.class, "cp5_note").setText(str(m.n));
+              
+            // create and add boxes for each field
+            int index = 0;
+            remove_optional_fields();
+            for(Map.Entry field : m.fields.entrySet()) {
+              cp5_addField();
+              cp5.get(Textfield.class, "cp5_tf"+index+"_key").setText((String)field.getKey());
+              cp5.get(Textfield.class, "cp5_tf"+index+"_value").setText(str((float)field.getValue()));
+              index++;
+            }
+          }
+        }
         else if(p.mouseButton == RIGHT)
           canvas.removeNote(s_index, n_index, (int)t_index);
         
-      }
-      catch(Exception e) {print('.');}
+      //}
+      //catch(Exception e) {print('.');}
     }
     
     if (isPlaying) {
@@ -166,7 +192,7 @@ class SirenEditorCanvas extends Canvas {
           
           pg.stroke(150);
           pg.fill(200);
-          pg.rect(_x, _y, _w, __h);
+          pg.rect(_x, _y+2, _w, __h-4);
         }
       } 
       }catch(Exception e) {print("_dn_");}

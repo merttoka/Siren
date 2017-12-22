@@ -54,14 +54,57 @@ void keyPressed(KeyEvent e) {
 }
 
 
+//// CONTROL P5 EVENTS /////
+int numberOfFieldTextfields = 0;
 void cp5_samples(int n) {
   selectableIndex = n;
   println(selectableIndex);
 }
-
 public void cp5_add() {
   String selectedSample = (String)cp5.get(ScrollableList.class, "cp5_samples").getItem(selectableIndex).get("name");
   String selectedNote = (String)cp5.get(Textfield.class,"cp5_note").getText();
   
   canvas.addNote(selectedSample, int(selectedNote), null);
 }
+public void cp5_addField() {
+  float offset = (numberOfFieldTextfields+1)*40;
+  cp5.addBang("cp5_tf"+numberOfFieldTextfields+"_delete")
+     .setCaptionLabel("-")
+     .setPosition(0, 100+2*marginy + offset)
+     .setSize(marginx, 20)
+     .setGroup(createPattern);
+  cp5.addTextfield("cp5_tf"+numberOfFieldTextfields+"_key")
+     .setCaptionLabel("key")
+     .setPosition(marginx, 100+2*marginy + offset)
+     .setSize(int(size.x-2*marginx)/2, 20)
+     .setAutoClear(false)
+     .setGroup(createPattern);
+  cp5.addTextfield("cp5_tf"+numberOfFieldTextfields+"_value")
+     .setCaptionLabel("value")
+     .setPosition(int(size.x)/2, 100+2*marginy + offset)
+     .setSize(int(size.x-2*marginx)/2, 20)
+     .setAutoClear(false)
+     .setGroup(createPattern);
+  numberOfFieldTextfields++;
+}
+public void remove_optional_fields() {
+  for (int i=0; i < numberOfFieldTextfields; i++) {
+    if(cp5.get(Textfield.class, "cp5_tf"+i+"_key") != null && 
+       cp5.get(Textfield.class, "cp5_tf"+i+"_value") != null){
+      cp5.get(Textfield.class, "cp5_tf"+i+"_key").remove();
+      cp5.get(Textfield.class, "cp5_tf"+i+"_value").remove();
+      cp5.get(Bang.class, "cp5_tf"+i+"_delete").remove();
+    }
+  }
+  numberOfFieldTextfields = 0;
+}
+public void controlEvent(ControlEvent theEvent) {
+  for (int i=0; i < numberOfFieldTextfields; i++) {
+    if (theEvent.getController().getName().equals("cp5_tf"+i+"_delete")) {
+      cp5.get(Textfield.class, "cp5_tf"+i+"_key").remove();
+      cp5.get(Textfield.class, "cp5_tf"+i+"_value").remove();
+      cp5.get(Bang.class, "cp5_tf"+i+"_delete").remove();
+    }
+  }
+}
+////////////////////////////

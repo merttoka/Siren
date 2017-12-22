@@ -3,10 +3,13 @@ import java.util.*;
 
 ControlP5 cp5;
 Canvas gc;
-Group contextMenu;
+Group createPattern;
 
 int marginx = 10;
 int marginy = 10;
+
+PVector pos = new PVector(marginx, marginy);
+PVector size = new PVector(100, height-2*marginy);
 
 HashMap<String, String> fields = new HashMap<String, String>();
 
@@ -35,10 +38,7 @@ void initControls() {
 }
 
 void initWindow() {
-  PVector pos = new PVector(marginx, marginy);
-  PVector size = new PVector(100, height-2*marginy);
-  
-  Group createPattern = cp5.addGroup("createPattern")
+  createPattern = cp5.addGroup("createPattern")
                             .setPosition(pos.x, pos.y)
                             .setWidth(int(size.x))
                             .setBackgroundHeight(int(size.y))
@@ -64,9 +64,15 @@ void initWindow() {
      .setAutoClear(false)
      .setGroup(createPattern);
   
-  cp5.addBang("cp5_add")
-     .setCaptionLabel("add")
+  cp5.addBang("cp5_addField")
+     .setCaptionLabel("+")
      .setPosition(int(size.x-3*marginx), 100+2*marginy)
      .setSize(int(2*marginx), 20)
+     .setGroup(createPattern);
+     
+  cp5.addBang("cp5_add")
+     .setCaptionLabel("add")
+     .setPosition(marginx, 500+2*marginy)
+     .setSize(int(size.x-2*marginx), 20)
      .setGroup(createPattern);
 }

@@ -49,6 +49,15 @@ public class PianoRoll {
       this.numberOfSamples++;
     }
   }
+  public Message getNote(int s_i, int n_i, int t_i) {
+    NoteContainer n = sampleList.get(s_i).notes.get(n_i);
+    for(Message m : n.messages) {
+      if(m.t_index == t_i) {
+        return m;
+      }
+    }
+    return null;
+  }
   public void removeNote(int s_i, int n_i, int t_i) {
     NoteContainer n = sampleList.get(s_i).notes.get(n_i);
     for(Message m : n.messages) {
