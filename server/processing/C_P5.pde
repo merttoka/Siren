@@ -18,7 +18,7 @@ void initControls() {
   cp5.setColorActive(color(255, 150));
   
   // Canvas
-  gc = new GrainCanvas(100+4*marginx, marginy, 
+  gc = new SirenEditorCanvas(100+4*marginx, marginy, 
                        width-5*marginx-100, height-2*marginy);
   gc.pre();
   cp5.addCanvas(gc);

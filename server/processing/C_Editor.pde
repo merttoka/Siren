@@ -1,11 +1,11 @@
 boolean isPlaying = false;
 int current_timestamp = -1;
 
-class GrainCanvas extends Canvas {
+class SirenEditorCanvas extends Canvas {
   public float x, y, w, h;
   int mx, my;
   
-  public GrainCanvas(float x, float y, float w, float h) {
+  public SirenEditorCanvas(float x, float y, float w, float h) {
     this.x = x;
     this.y = y;
     this.w = w;
