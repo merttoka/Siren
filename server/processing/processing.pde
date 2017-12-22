@@ -2,22 +2,22 @@ float prevTime = millis();
 float time = 0;
 float deltaTime = 0;
 
-int startCycle = 0;
-
-int cycleRes = 12;
-int totalCycle = 8;
-float maxTime = totalCycle*1000;
-
-PVector resolution = new PVector(cycleRes*totalCycle, 1);
+PianoRoll canvas;
 
 void setup() {
-  size(800, 400);
-  
+  size(1200, 600);
   frameRate(30);
   noSmooth();
   
+  //printArray(subset(PFont.list(), 200, 400));
+  textFont(createFont("Courier New Bold", 12));
+  
+  canvas = new PianoRoll();
+  
   initNetwork();
   initControls();
+  
+  surface.setResizable(true);
 }
 
 void draw() {
@@ -25,6 +25,10 @@ void draw() {
   deltaTime = millis() - prevTime;
  
   // App drawing
- 
+  
   prevTime = millis();
+  
+  // title
+  String txt_fps = String.format("Siren Editor [fps %6.2f]", frameRate);
+  surface.setTitle(txt_fps);
 }

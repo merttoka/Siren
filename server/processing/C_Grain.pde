@@ -1,112 +1,184 @@
 boolean isPlaying = false;
 int current_timestamp = -1;
 
-
-PImage canvas;
-
 class GrainCanvas extends Canvas {
   public float x, y, w, h;
   int mx, my;
-  
-  color[] getPixelsAt(int _x) {
-    color[] ys = new int[canvas.height];
-    
-    int j = 0;
-    for(int i = _x; i < canvas.pixels.length; i+=canvas.width) {
-      ys[j++] = canvas.pixels[i];  
-    }
-    
-    return ys;
-  }
   
   public GrainCanvas(float x, float y, float w, float h) {
     this.x = x;
     this.y = y;
     this.w = w;
     this.h = h;
-    
-    canvas = createImage(int(resolution.x), int(resolution.y), ARGB);
   }
   
   public void setup(PGraphics pg) {}  
 
   public void update(PApplet p) {
-    w = p.width - 2*marginx;
-    h = p.height - 2*marginy;
-    
     mx = p.mouseX;
     my = p.mouseY;
     
-    if (mx >= x && mx < x+w && my >= y && my < y+h){
-      try {
-        int pixdex = int((my-marginy)/(h/resolution.y)) * canvas.width + int((mx-marginx)/(w/resolution.x));
-        if(p.mousePressed && p.mouseButton == LEFT) {
-          canvas.loadPixels();
-          canvas.pixels[pixdex] = color(200);
-          canvas.updatePixels();
-        }
-        else if(p.mousePressed && p.mouseButton == RIGHT) {
-          canvas.loadPixels();
-          canvas.pixels[pixdex] = color(0, 0);
-          canvas.updatePixels();
-        }
-      } catch(Exception e) {
-        print(",");
+    if (p.mousePressed && mx >= x && mx < x+w && my >= y && my < y+h){
+      try{
+        float _h = h/canvas.numberOfSamples;
+        int s_index = int((my-y)/_h);
+        
+        float __h = _h/canvas.sampleList.get(s_index).notes.size();
+        int n_index = int((my-(s_index*_h+y))/__h);
+        
+        float _w = w/(canvas.cycleResolution*canvas.numberOfCycles);
+        float t_index = (mx-x)/_w;
+        
+        String s = canvas.sampleList.get(s_index).s;
+        int    n = canvas.sampleList.get(s_index).notes.get(n_index).n;
+        
+        Message m = new Message();
+        m.assignUpdate(s, n, canvas.startCycle + t_index/canvas.cycleResolution);
+        
+        if(p.mouseButton == LEFT)
+          canvas.addNote(s, n, m);
+        else if(p.mouseButton == RIGHT)
+          canvas.removeNote(s_index, n_index, (int)t_index);
+        
       }
+      catch(Exception e) {print('.');}
     }
     
     if (isPlaying) {
       time += deltaTime;
       
       // trig samples only on integer time
-      int timestamp_location = int(map(time, 0, maxTime, 0, canvas.width));
+      int timestamp_location = icmap(time, 
+                                     0, canvas.maxTime, 
+                                     0, canvas.cycleResolution*canvas.numberOfCycles);
       if(timestamp_location > current_timestamp) {
          current_timestamp = timestamp_location;
          
-         color[] arr = getPixelsAt(current_timestamp);
-         for(int i = 0; i < arr.length; i++) {
-           if(arr[i] != 0) {
-             println("Trig");
+         ArrayList<Message> messages = canvas.getMessagesAt(current_timestamp);
+         for(int i = 0; i < messages.size(); i++) {
+           Message m = messages.get(i);
+           println("Trig");
+           
+           OscMessage myMessage = new OscMessage("/play2");
+           myMessage.add("cps");
+           myMessage.add(1.0);
+           myMessage.add("cycle");
+           myMessage.add(m.cycle);
+           myMessage.add("delta");
+           myMessage.add(m.delta);
+           myMessage.add("cps");
+           myMessage.add(m.cps);
+           myMessage.add("s");
+           myMessage.add(m.s);
+           myMessage.add("n");
+           myMessage.add(m.n);
+           myMessage.add("orbit");
+           myMessage.add(m.orbit);
+           for(Map.Entry f : m.fields.entrySet()){
+             myMessage.add((String)f.getKey());
+             myMessage.add((float)f.getValue());
            }
+           
+           println(myMessage);
+           oscP5.send(myMessage, myRemoteLocation); 
          }
       }
         
-      if(time > maxTime) { 
-        time -= maxTime; 
+      if(time > canvas.maxTime) { 
+        time -= canvas.maxTime; 
         current_timestamp = -1;
       }
     }
   }
 
   public void draw(PGraphics pg) {
+    try {
     // Background
     pg.fill(27);
     pg.rect(x, y, w, h);
     
-    // draw the grid
-    for(int i = 0; i < resolution.x; i++) {
-      float _x = x + w/resolution.x*i;
-      if(i%cycleRes == 0) pg.stroke(255, 25);
-      else                pg.stroke(255, 15);
+    // useful variables
+    int extended = canvas.cycleResolution * canvas.numberOfCycles;
+    float _w = w/extended;
+    float _h = h/canvas.numberOfSamples;
+    
+    // draw the grid and labels
+    for(int i = 0; i < extended; i++) {
+      float _x = x + i*_w;
+      pg.stroke(255, i%canvas.cycleResolution == 0 ? 35 : 15);
       pg.line(_x, y, _x, y+h);
     }
-    for(int j = 0; j < resolution.y; j++) {
-      if(j < resolution.y*0.5)
-        pg.stroke(255, map(j, 0, resolution.y*0.5, 2, 15));
-      else if (j == resolution.y*0.5)
-        pg.stroke(255, 50);
-      else
-        pg.stroke(255, map(j, resolution.y*0.5, resolution.y, 15, 2));
-        
-      float _y = y + h/resolution.y*j;
+    for(int i = 0; i < canvas.numberOfSamples; i++) {
+      float _y = y + i*_h;
+      
+      if(isLabels) {
+        pg.fill(20);
+        pg.stroke(50);
+        pg.rect(x-3*marginx, _y+2 , _w, _h - 4);
+        pg.pushMatrix();
+        pg.textAlign(CENTER, CENTER);
+        pg.translate(x-2.5*marginx, _y+_h*0.5);
+        pg.rotate(3*HALF_PI);
+        pg.fill(150);
+        pg.text(canvas.sampleList.get(i).s, 0, 0);
+        pg.popMatrix();
+      }
+      
+      pg.stroke(255, 35);
       pg.line(x, _y, x+w, _y);
+      for(int j = 0; j < canvas.sampleList.get(i).notes.size(); j++) {
+        float __h = _h/canvas.sampleList.get(i).notes.size();
+        float __y = _y+j*__h;
+        
+        if(isLabels) {
+          pg.fill(20);
+          pg.stroke(50);
+          pg.rect(x-1.5*marginx, __y+2 , _w, __h - 4);
+          pg.pushMatrix();
+          pg.textAlign(CENTER, CENTER);
+          pg.translate(x-marginx, __y+__h*0.5);
+          pg.rotate(3*HALF_PI);
+          pg.fill(150);
+          pg.text(canvas.sampleList.get(i).notes.get(j).n, 0, 0);
+          pg.popMatrix();
+        }
+        
+        pg.stroke(255, 15);
+        pg.line(x, __y , x+w, __y);
+      }
     }
     
-    pg.image(canvas, x, y, w, h);
-    
+    // draw notes
+    for(int i = 0; i < canvas.sampleList.size(); i++) {
+      try{
+      SampleContainer s = canvas.sampleList.get(i);
+      
+      float __h = _h/s.notes.size();
+      for(int j = 0; j < s.notes.size(); j++) {
+        NoteContainer n = s.notes.get(j);
+        float _y = y + i*_h + j*__h;
+        
+        for(int k = 0; k < n.messages.size(); k++) {
+          float _x = x + _w*icmap(n.messages.get(k).cycle, 
+                                  canvas.startCycle, 
+                                  canvas.startCycle+canvas.numberOfCycles,
+                                  0, extended);
+          
+          pg.stroke(150);
+          pg.fill(200);
+          pg.rect(_x, _y, _w, __h);
+        }
+      } 
+      }catch(Exception e) {print("_dn_");}
+    } 
+ 
     // draw timer
-    float _x = x + map(time, 0, maxTime, 0, w);
+    float _x = x + map(time, 0, canvas.maxTime, 0, w);
     pg.stroke(255, isPlaying ? 150 : 50);
     pg.line(_x, y, _x, y+h);
+    }
+    catch (ConcurrentModificationException e) {
+      println("Skipped");
+    }
   }
 }

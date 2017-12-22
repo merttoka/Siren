@@ -1,10 +1,26 @@
 
+// File
+static String[] listFileNames(String dir) {
+  File file = new File(dir);
+  if (file.isDirectory()) {
+    String names[] = file.list();
+    return names;
+  } else {
+    // If it's not a directory
+    return null;
+  }
+}
+
+
 // Math
 static float log10 (float x) {
   return (log(x) / log(10));
 }
 static float cmap(float v, float x1, float y1, float x2, float y2) {
   return constrain(map(v, x1, y1, x2, y2), min(x2, y2), max(x2, y2));
+}
+static int icmap(float v, float x1, float y1, float x2, float y2) {
+  return int(constrain(map(v, x1, y1, x2, y2), min(x2, y2), max(x2, y2)));
 }
 
 // Audio functions
