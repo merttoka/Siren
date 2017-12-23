@@ -1,5 +1,5 @@
 boolean isLabels = true;
-boolean isContextVisible = false;
+boolean renewGrid = true;
 
 int selectableIndex = 0;
 
@@ -12,10 +12,25 @@ void keyPressed(KeyEvent e) {
   else if(key == 'c') {
     canvas.nuke(-1);
   }
+  // toggle labels
   else if(key == 'l') {
     isLabels = !isLabels;
+    renewGrid = true;
   }
   
+  // CTRL + SHIFT + S
+  if (e.isShiftDown() && e.isControlDown() && int(e.getKey()) == 's'-'a'+1) {
+    println("SAVE");
+    saveJSON();
+  }
+  // CTRL + SHIFT + O
+  // TODO: make filename generic
+  if (e.isShiftDown() && e.isControlDown() && int(e.getKey()) == 'o'-'a'+1) {
+    println("LOAD");
+    loadJSON("exp_bjd_15163.json");
+  }
+  
+  // Change cycle resolution and total cycles
   if(key == '=' || key == '-' || key == '[' || key == ']') {
     switch(key) {
       case '=':
@@ -67,21 +82,21 @@ public void cp5_add() {
   canvas.addNote(selectedSample, int(selectedNote), null);
 }
 public void cp5_addField() {
-  float offset = (numberOfFieldTextfields+1)*40;
+  float offset = 100+2*marginy + 20+3*marginy+ (numberOfFieldTextfields+1)*40;
   cp5.addBang("cp5_tf"+numberOfFieldTextfields+"_delete")
      .setCaptionLabel("-")
-     .setPosition(0, 100+2*marginy + offset)
+     .setPosition(0, offset)
      .setSize(marginx, 20)
      .setGroup(createPattern);
   cp5.addTextfield("cp5_tf"+numberOfFieldTextfields+"_key")
      .setCaptionLabel("key")
-     .setPosition(marginx, 100+2*marginy + offset)
+     .setPosition(marginx, offset)
      .setSize(int(size.x-2*marginx)/2, 20)
      .setAutoClear(false)
      .setGroup(createPattern);
   cp5.addTextfield("cp5_tf"+numberOfFieldTextfields+"_value")
      .setCaptionLabel("value")
-     .setPosition(int(size.x)/2, 100+2*marginy + offset)
+     .setPosition(int(size.x)/2, offset)
      .setSize(int(size.x-2*marginx)/2, 20)
      .setAutoClear(false)
      .setGroup(createPattern);

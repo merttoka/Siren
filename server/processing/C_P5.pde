@@ -46,10 +46,24 @@ void initWindow() {
                             .disableCollapse();
   createPattern.hideBar();
  
+  // creates a default random name for the scene
+  int randomLength = int(random(3, 6));
+  String s = "";
+  for(int i = 0; i < randomLength; i++) {
+    s += (char)random(97, 122);
+  }
+  cp5.addTextfield("cp5_rollname")
+     .setCaptionLabel("Editor Name")
+     .setPosition(marginx, marginy)
+     .setSize(int(size.x-2*marginx), 20)
+     .setAutoClear(false)
+     .setGroup(createPattern)
+     .setText(s);
+ 
   String[] filenames = listFileNames("C:/Users/Mert/Dropbox/Whalehouse/99s/");
   cp5.addScrollableList("cp5_samples")
      .setCaptionLabel("Samples")
-     .setPosition(marginx, marginy)
+     .setPosition(marginx, 20+4*marginy)
      .setSize(int(size.x-2*marginx), 100)
      .setBarHeight(20)
      .setItemHeight(20)
@@ -59,14 +73,14 @@ void initWindow() {
   
   cp5.addTextfield("cp5_note")
      .setCaptionLabel("n")
-     .setPosition(marginx, 100+2*marginy)
+     .setPosition(marginx, 100+2*marginy + 20+3*marginy)
      .setSize(int(size.x-5*marginx), 20)
      .setAutoClear(false)
      .setGroup(createPattern);
   
   cp5.addBang("cp5_addField")
      .setCaptionLabel("+")
-     .setPosition(int(size.x-3*marginx), 100+2*marginy)
+     .setPosition(int(size.x-3*marginx), 100+2*marginy + 20+3*marginy)
      .setSize(int(2*marginx), 20)
      .setGroup(createPattern);
      

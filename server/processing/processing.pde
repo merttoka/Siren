@@ -1,6 +1,7 @@
 float prevTime = millis();
 float time = 0;
 float deltaTime = 0;
+float timeCoefficient = 1;
 
 PianoRoll canvas;
 

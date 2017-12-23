@@ -55,3 +55,27 @@ void oscEvent(OscMessage theOscMessage) {
     }  
   }
 }
+
+// Sends message to SC
+void sendSCMessage(Message m) {
+   OscMessage myMessage = new OscMessage("/play2");
+   myMessage.add("cps");
+   myMessage.add(1.0);
+   myMessage.add("cycle");
+   myMessage.add(m.cycle);
+   myMessage.add("delta");
+   myMessage.add(m.delta);
+   myMessage.add("cps");
+   myMessage.add(m.cps);
+   myMessage.add("s");
+   myMessage.add(m.s);
+   myMessage.add("n");
+   myMessage.add(m.n);
+   myMessage.add("orbit");
+   myMessage.add(m.orbit);
+   for(Map.Entry f : m.fields.entrySet()){
+     myMessage.add((String)f.getKey());
+     myMessage.add((float)f.getValue());
+   }
+   oscP5.send(myMessage, myRemoteLocation); 
+}
