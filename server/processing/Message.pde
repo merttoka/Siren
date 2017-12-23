@@ -22,6 +22,7 @@ public class PianoRoll {
     }
     return _msg;
   }
+
   public void restructureMessages() {
     for(SampleContainer s : sampleList) {
       for(NoteContainer n : s.notes) {
@@ -30,6 +31,7 @@ public class PianoRoll {
         }  
       }
     }
+    renewGrid = true;
   }
   public void addNote (String s, int n, Message m) {   
     SampleContainer _sample = isExist(s);
@@ -46,6 +48,7 @@ public class PianoRoll {
             return one.s.compareTo(other.s);
           }
       });
+      renewGrid = true;
       this.numberOfSamples++;
     }
   }
@@ -71,6 +74,7 @@ public class PianoRoll {
   public void nuke(int cycleNumber) {
     sampleList.clear();
     numberOfSamples = 0;
+    renewGrid = true;
     startCycle = cycleNumber;
   }
   

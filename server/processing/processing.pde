@@ -6,7 +6,7 @@ PianoRoll canvas;
 
 void setup() {
   size(1200, 600);
-  frameRate(30);
+  frameRate(60);
   noSmooth();
   
   //printArray(subset(PFont.list(), 200, 400));

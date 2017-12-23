@@ -16,7 +16,7 @@ void keyPressed(KeyEvent e) {
     isLabels = !isLabels;
   }
   
-  if(key == '+' || key == '-' || key == '[' || key == ']') {
+  if(key == '=' || key == '-' || key == '[' || key == ']') {
     switch(key) {
       case '=':
         canvas.numberOfCycles++;
