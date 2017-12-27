@@ -6,22 +6,23 @@ import sys, os, time, json, numpy as np
 
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
+from pythonosc.udp_client import SimpleUDPClient
 
+osc_udp_client = None
 current_milli_time = lambda: int(round(time.time() * 1000))
-
-client = udp_client.SimpleUDPClient("127.0.0.1", 57120)
+osc_udp_client = SimpleUDPClient("127.0.0.1", 57120)
 
 def imap(value, istart, istop, ostart, ostop):
     return int(ostart + (ostop - ostart) * ((value - istart) / (istop - istart)))
-
+    
 def sendSCMessage(m):
-    message = "cycle, {0}, delta, {1}, cps, 1, s, {2}, n, {3}, orbit, {4}".format(m['cycle'], m['delta'], m['s'], m['n'], m['orbit']) 
-    
-    if m['fields']:
-        message += ','+m['fields']
-    
-    print(message)
-    client.send_message("/play2", message)
+    cycle = "cycle"
+    delta = "delta"
+    cps = "cps"
+    n = "n"
+    s = "s"
+    orbit = "orbit"
+    osc_udp_client.send_message("/play2", [cycle, m['cycle'], delta, m['delta'], cps, 1, s , m['s'], n, m['n'], orbit, m['orbit']])
 
 def constructTimeline(roll):
     timelength = roll['end']*roll['resolution']
@@ -52,14 +53,12 @@ def main():
     #parameters
     roll_name  = lines[0]
     roll_note  = lines[1]
-
-    #UNUSED
     roll_start = lines[2]
     roll_stop  = lines[3]
     roll_speed = lines[4]
     roll_loop  = lines[5]
     
-    # print(roll_name, roll_note, roll_start, roll_stop, roll_speed, roll_loop)
+    print(roll_name, roll_note, roll_start, roll_stop, roll_speed, roll_loop)
 
     jsondata = loadJSON(roll_name, roll_note)
     if jsondata is None:

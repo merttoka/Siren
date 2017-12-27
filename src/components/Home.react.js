@@ -31,6 +31,7 @@ import _ from 'lodash';
 import Firebase from 'firebase';
 import store from '../store';
 import Patterns from './Patterns.react';
+import PatternRoll from './PatternRoll.react';
 import Channels from './Channels.react';
 import Settings from './Settings.react';
 import PatternHistory from './PatternHistory.react';
@@ -68,7 +69,7 @@ ResponsiveReactGridLayout = WidthProvider(ResponsiveReactGridLayout);
 // import 'react-perf-tool/lib/styles.css';
 
 // Channel Types
-const channelOptions = ['Tidal', 'Visual', 'Tidal-MIDI', 'SuperCollider']
+const channelOptions = ['Tidal', 'Visual', 'Tidal-MIDI', 'SuperCollider', 'PatternRoll']
 
 class Home extends Component {
   constructor(props) {
@@ -112,6 +113,7 @@ class Home extends Component {
       default_layout: [{i: "scenes", x: 0, y: 0, w: 3, h: 20, minW: 3, isVisible: true},
                        {i: 'matrix', x: 3, y: 0, w: 13, h: 13, minW: 5, isVisible: true},
                        {i: 'patterns', x: 16, y: 0, w: 8, h: 20, minW: 3, isVisible: true},
+                       {i: 'patternroll', x: 16, y: 0, w: 8, h: 20, minW: 3, isVisible: true},
                        {i: 'pattern_history', x: 3, y: 13, w: 13, h: 3, minW: 3, isVisible: true},
                        {i: 'channel_add', x: 3, y: 16, w: 3, h: 4, minW: 2, isVisible: true},
                        {i: 'globals', x: 6, y: 16, w: 5, h: 4, minW: 4, isVisible: false},
@@ -916,6 +918,16 @@ class Home extends Component {
         </div>
         <div className={ctx.enableDisableClassname("AllPatterns PanelAdjuster")} >
           <Patterns active={activeMatrix}/>
+        </div>
+      </div>);
+    }
+    else if (layoutItem.i === 'patternroll') {
+      return layoutItem.isVisible && (<div key={'patternroll'} className={layoutVisibility} data-grid={getGridParameters('patternroll')}>
+        <div className={"PanelHeader"}> ■ Pattern Rolls in <span style={{fontWeight: 'bold'}}>{'"'+activeMatrix+'"'}</span>
+          <span className={"PanelClose draggableCancel"} onClick={ctx.onRemovelayoutItem.bind(ctx, "patternroll")}>X</span>
+        </div>
+        <div className={ctx.enableDisableClassname("AllPatterns PanelAdjuster")} >
+          <PatternRoll uid ={ctx.props.user.user.name}/>
         </div>
       </div>);
     }

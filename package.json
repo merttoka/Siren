@@ -43,6 +43,7 @@
   "dependencies": {
     "axios": "^0.14.0",
     "body-parser": "^1.15.2",
+    "chokidar": "^1.7.0",
     "debug": "^3.0.0",
     "dgram": "^1.0.1",
     "express": "^4.14.0",
@@ -56,6 +57,7 @@
     "keymaster": "^1.6.2",
     "lodash": "^4.17.2",
     "mathjs": "^3.10.0",
+    "os-homedir": "^1.0.2",
     "osc": "^2.2.0",
     "osc-js": "^1.1.1",
     "prop-types": "^15.5.10",

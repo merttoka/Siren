@@ -37,25 +37,23 @@ class MenuBar extends Component {
     const { socket_tick } = ctx.state;
 
 
-
     socket_tick.on('connect', (reason) => {
       console.log("Port 3003 Connected: ", reason);
       ctx.setState({serversListening: true});
     });
-    socket_tick.on("/tick2react", data => {
-      // console.log("Port 3003 tick2react: ");
-      store.dispatch(startClick());
-    })
-
-    socket_tick.on("/tick2react-done", data => {
-      console.log("Port 3003 tick2react-done: ");
-      store.dispatch(stopClick());
-    })
     socket_tick.on('disconnect', (reason) => {
       console.log("Port 3003 Disconnected: ", reason);
       store.dispatch(saveScBootInfo({boot: 0, tidalMenu: false}));
       ctx.setState({serversListening: false});
     });
+    socket_tick.on("/tick2react", data => {
+      // console.log("Port 3003 tick2react: ");
+      store.dispatch(startClick());
+    })
+    socket_tick.on("/tick2react-done", data => {
+      console.log("Port 3003 tick2react-done: ");
+      store.dispatch(stopClick());
+    })
 
     store.dispatch(saveScBootInfo({boot: 0, tidalMenu: false}));
 
@@ -181,8 +179,8 @@ class MenuBar extends Component {
         {(!tidalMenu && boot === 1) && <button className={'Button draggableCancel ' + (serversListening ? ' enabledView' : ' disabledView')} onClick={ctx.runTidal.bind(ctx)}>Start Server</button>}
         {tidalMenu && <button className={'Button draggableCancel ' + (serversListening ? ' enabledView' : ' disabledView') } onClick={ctx.stopTidal.bind(ctx)}>Stop Server</button>}
         <div className={"TimerControls"}>
-          {!click.isActive && <img src={require('../assets/play@3x.png')} className={(tidalMenu ? 'enabledView' : 'disabledView')} onClick={ctx.startTimer.bind(ctx)} role="presentation" height={32} width={32}/>}
-          {click.isActive && <img src={require('../assets/stop@3x.png')} className={(tidalMenu ? 'enabledView' : 'disabledView')} onClick={ctx.stopTimer.bind(ctx)} role="presentation" height={32} width={32}/>}
+          { <img src={require('../assets/play@3x.png')}  onClick={ctx.startTimer.bind(ctx)} role="presentation" height={32} width={32}/>}
+          { <img src={require('../assets/stop@3x.png')} onClick={ctx.stopTimer.bind(ctx)} role="presentation" height={32} width={32}/>}
           <p style={{paddingLeft: 15, paddingRight: 5}}>{'Rate: '}</p>
           <input className={'TimesInput'} value={times} onChange={changeTimes}/>
         </div>

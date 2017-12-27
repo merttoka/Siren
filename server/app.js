@@ -16,6 +16,27 @@ let jsonfile = require('jsonfile')
 
 let dcon = socketIo.listen(3004);
 
+
+let dseq = socketIo.listen(4004);
+var chokidar = require('chokidar');
+var watcher = chokidar.watch('./server/processing/', {
+  ignored: /(^|[\/\\])\../,
+  persistent: true
+});
+
+watcher.on('change', (path, stats) => {
+  
+  dseq.sockets.emit('dseqo', ({fileseq: path}));
+});
+watcher.on('addDir', (path, stats) => {
+  
+  dseq.sockets.emit('dseqo', ({fileseq: path}));
+});
+watcher.on('add', (path, stats) => {
+  
+  dseq.sockets.emit('dseqo', ({fileseq: path}));
+});
+
 class REPL {
   hush() {
     this.tidalSendExpression('hush');
@@ -258,15 +279,16 @@ const Siren = () => {
   });
 
   app.post('/processing', (req, reply) => {
-    
-    // spawns an instance of python script that triggers samples in pattern rolls
+    // exec('processing-java --sketch=' + __dirname + '/processing --run');
+  });
+
+  app.post('/sq', (req, reply) => {
+    const {sq} = req.body;
+
+    console.log(' ## -->   sq inbound:', sq);
     let py    = spawn('python3', [__dirname+'/trig_roll.py']),
-        data  = ['goj', 1, 
-          0.2, 0.5, 
-          0.5, 3];  
-        // data  = [roll_name, roll_note, 
-        //          start, stop, 
-        //          speed, loop];//[1,2,3,4,5,6,7,8,9],
+        data  = [sq[0], sq[1], sq[2], sq[3], sq[4], sq[5]];  
+     // data  = [roll_name, roll_note, start, stop, speed, loop];
 
     // python print
     py.stdout.on('data', function(data){
@@ -282,9 +304,6 @@ const Siren = () => {
     });
     py.stdin.write(JSON.stringify(data));
     py.stdin.end();
-    /////////////////
-
-    // exec('processing-java --sketch=' + __dirname + '/processing --run');
   });
 
   app.post('/boot', (req, reply) => {
