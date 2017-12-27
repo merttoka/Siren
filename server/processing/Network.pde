@@ -59,8 +59,6 @@ void oscEvent(OscMessage theOscMessage) {
 // Sends message to SC
 void sendSCMessage(Message m) {
    OscMessage myMessage = new OscMessage("/play2");
-   myMessage.add("cps");
-   myMessage.add(1.0);
    myMessage.add("cycle");
    myMessage.add(m.cycle);
    myMessage.add("delta");

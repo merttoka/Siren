@@ -27,7 +27,7 @@ void keyPressed(KeyEvent e) {
   // TODO: make filename generic
   if (e.isShiftDown() && e.isControlDown() && int(e.getKey()) == 'o'-'a'+1) {
     println("LOAD");
-    loadJSON("exp_bjd_15163.json");
+    loadJSON("export/exp~~~goj~~~15524841354.json");
   }
   
   // Change cycle resolution and total cycles

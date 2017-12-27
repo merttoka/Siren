@@ -1,6 +1,8 @@
 public class PianoRoll {
   public ArrayList<SampleContainer> sampleList;
   
+  public String name = "";
+  
   public int numberOfCycles = 8;
   public int cycleResolution = 12;
   
@@ -11,6 +13,12 @@ public class PianoRoll {
   
   public PianoRoll() {
     this.sampleList = new ArrayList<SampleContainer>();
+    
+    // creates a default random name for the scene
+    int randomLength = int(random(3, 6));
+    for(int i = 0; i < randomLength; i++) {
+      name += (char)random(97, 122);
+    }
   }
   public ArrayList<Message> getMessagesAt(int x) {
     ArrayList<Message> _msg = new ArrayList<Message>();

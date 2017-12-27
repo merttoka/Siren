@@ -1,0 +1,99 @@
+{
+  "loop": 1,
+  "start": 0,
+  "messages": [
+    {
+      "s": "blp_atom",
+      "cps": 1,
+      "delta": 0.3888890743255615,
+      "orbit": 0,
+      "fields": "end,0.2,pan,0.6,speed,0.3,gain,0.9207355",
+      "cycle": 676.8333129882812,
+      "t_index": 33,
+      "n": 1
+    },
+    {
+      "s": "blp_atom",
+      "cps": 1,
+      "delta": 0.3888890743255615,
+      "orbit": 0,
+      "fields": "end,0.2,pan,0.4,speed,1.0,gain,0.9207355",
+      "cycle": 677.8333129882812,
+      "t_index": 45,
+      "n": 1
+    },
+    {
+      "s": "blp_atom",
+      "cps": 1,
+      "delta": 0.3888890743255615,
+      "orbit": 0,
+      "fields": "end,0.2,pan,0.6,speed,0.3,gain,0.9207355",
+      "cycle": 677.8333129882812,
+      "t_index": 45,
+      "n": 1
+    },
+    {
+      "s": "cilang",
+      "cps": 1,
+      "delta": 0.3888888359069824,
+      "orbit": 0,
+      "fields": "end,0.2,pan,0.6,speed,0.3,gain,0.9207355",
+      "cycle": 673.7222290039062,
+      "t_index": 0,
+      "n": 0
+    },
+    {
+      "s": "cilang",
+      "cps": 1,
+      "delta": 0.7777776718139648,
+      "orbit": 0,
+      "fields": "end,0.2,pan,0.4,speed,1.0,gain,0.9207355",
+      "cycle": 678.2222290039062,
+      "t_index": 50,
+      "n": 0
+    },
+    {
+      "s": "cilang",
+      "cps": 1,
+      "delta": 0.3888888359069824,
+      "orbit": 0,
+      "fields": "end,0.2,pan,0.4,speed,1.0,gain,0.9207355",
+      "cycle": 679.388916015625,
+      "t_index": 64,
+      "n": 0
+    },
+    {
+      "s": "cilang",
+      "cps": 1,
+      "delta": 0.3888888359069824,
+      "orbit": 0,
+      "fields": "end,0.2,pan,0.6,speed,0.3,gain,0.9207355",
+      "cycle": 679.388916015625,
+      "t_index": 64,
+      "n": 0
+    },
+    {
+      "s": "cilang",
+      "cps": 1,
+      "delta": 0.7777776718139648,
+      "orbit": 0,
+      "fields": "end,0.2,pan,0.4,speed,1.0,gain,0.9207355",
+      "cycle": 678.2222290039062,
+      "t_index": 50,
+      "n": 1
+    },
+    {
+      "s": "cp",
+      "cps": 1,
+      "delta": 0.09722208976745605,
+      "orbit": 0,
+      "fields": "end,0.2,pan,0.6,speed,0.3,gain,0.9207355",
+      "cycle": 675.4722290039062,
+      "t_index": 17,
+      "n": 2
+    }
+  ],
+  "end": 8,
+  "resolution": 12,
+  "speed": 1
+}

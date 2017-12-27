@@ -50,17 +50,18 @@ void saveJSON () {
         message.setString("s", m.s);
         message.setInt("n", m.n);
         message.setInt("orbit", m.orbit);
+        message.setFloat("cycle", m.cycle);
         message.setInt("t_index", m.t_index);
         //message.setFloat("time", m.time);
-        //message.setFloat("cps", m.cps);
-        message.setFloat("cycle", m.cycle - canvas.startCycle);
-        //message.setFloat("delta", m.delta);
+        message.setFloat("cps", m.cps);
+        message.setFloat("delta", m.delta);
         
         String fieldString = "";
         for(Map.Entry field : m.fields.entrySet()) {
           fieldString += (String)field.getKey()+','+str((float)field.getValue())+',';
         }
-        message.setString("fields", fieldString);
+        if(!fieldString.equals("")) 
+          message.setString("fields", fieldString.substring(0, fieldString.length()-1));
         
         messages.setJSONObject(i++, message);
       }
@@ -68,10 +69,9 @@ void saveJSON () {
   }
   json.setJSONArray("messages", messages);
   
-  
-  saveJSONObject(json, "data/exp_"+
-                       (String)cp5.get(Textfield.class,"cp5_rollname").getText()+"_"+
-                       millis()+".json");
+  saveJSONObject(json, "export/exp~~~"+
+                       (String)cp5.get(Textfield.class,"cp5_rollname").getText()+"~~~"+
+                       hour()+minute()+second()+millis()+".json");
 }
 void loadJSON (String filename) {
   canvas.startCycle = 0;
@@ -95,8 +95,8 @@ void loadJSON (String filename) {
     m.orbit = msg.getInt("orbit");
     m.t_index = msg.getInt("t_index");
     //m.time = msg.getFloat("time");
-    //m.cps = msg.getFloat("cps");
-    //m.delta = msg.getFloat("delta");
+    m.cps = msg.getFloat("cps");
+    m.delta = msg.getFloat("delta");
     m.cycle = msg.getFloat("cycle");
     
     // fields

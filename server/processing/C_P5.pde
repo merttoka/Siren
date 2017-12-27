@@ -46,19 +46,13 @@ void initWindow() {
                             .disableCollapse();
   createPattern.hideBar();
  
-  // creates a default random name for the scene
-  int randomLength = int(random(3, 6));
-  String s = "";
-  for(int i = 0; i < randomLength; i++) {
-    s += (char)random(97, 122);
-  }
   cp5.addTextfield("cp5_rollname")
      .setCaptionLabel("Editor Name")
      .setPosition(marginx, marginy)
      .setSize(int(size.x-2*marginx), 20)
      .setAutoClear(false)
      .setGroup(createPattern)
-     .setText(s);
+     .setText(canvas.name);
  
   String[] filenames = listFileNames("C:/Users/Mert/Dropbox/Whalehouse/99s/");
   cp5.addScrollableList("cp5_samples")

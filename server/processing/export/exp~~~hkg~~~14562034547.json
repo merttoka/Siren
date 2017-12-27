@@ -1,0 +1,25 @@
+{
+  "loop": 1,
+  "start": 0,
+  "messages": [
+    {
+      "s": "707",
+      "orbit": 0,
+      "fields": "coarse,2.0,speed,2.0,",
+      "cycle": 1.600000023841858,
+      "t_index": 19,
+      "n": 0
+    },
+    {
+      "s": "707",
+      "orbit": 0,
+      "fields": "coarse,2.0,speed,2.0,",
+      "cycle": 2.636190414428711,
+      "t_index": 31,
+      "n": 0
+    }
+  ],
+  "end": 8,
+  "resolution": 12,
+  "speed": 1
+}

@@ -28,7 +28,7 @@ class REPL {
       dcon.sockets.emit('dcon', ({dcon: data.toString('utf8')}));
     });
     this.repl.stdout.on('data', data => {
-      console.error(data)
+      console.error(data.toString())
       dcon.sockets.emit('dcon', ({dcon: data.toString('utf8')}));
     });
     console.log(" ## -->   GHC Spawned");
@@ -258,7 +258,33 @@ const Siren = () => {
   });
 
   app.post('/processing', (req, reply) => {
-    exec('processing-java --sketch=' + __dirname + '/processing --run');
+    
+    // spawns an instance of python script that triggers samples in pattern rolls
+    let py    = spawn('python3', [__dirname+'/trig_roll.py']),
+        data  = ['goj', 1, 
+          0.2, 0.5, 
+          0.5, 3];  
+        // data  = [roll_name, roll_note, 
+        //          start, stop, 
+        //          speed, loop];//[1,2,3,4,5,6,7,8,9],
+
+    // python print
+    py.stdout.on('data', function(data){
+      console.log(data.toString());
+    });
+    // finish
+    py.stdout.on('end', function(){
+      console.log('Finished');
+    });
+    // error
+    py.stderr.on('data', (data) => {
+      console.error(`node-python stderr:\n${data}`);
+    });
+    py.stdin.write(JSON.stringify(data));
+    py.stdin.end();
+    /////////////////
+
+    // exec('processing-java --sketch=' + __dirname + '/processing --run');
   });
 
   app.post('/boot', (req, reply) => {
