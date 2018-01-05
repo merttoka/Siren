@@ -448,11 +448,6 @@ export const consoleSubmit = (server, expression) => {
 	}
 }
 
-export const sendSq = (server, name, note, begin, end, speed, loop, sid) => {
-	console.log("SENDSQ");
-	
-	
-}
 export const sendPatterns = (server, channel, stepValue, scenePatterns, click, globalparams) => {
 	let math = require('mathjs');
 
@@ -535,8 +530,9 @@ export const sendPatterns = (server, channel, stepValue, scenePatterns, click, g
 		return dispatch => {
 			var vsq = [name[0], name[1], begin, end, speed, loop, channel.cid];
 			console.log("SENDSQ", vsq);
-			axios.post('http://' + 'localhost:3001'.replace('http:', '').replace('/', '').replace('https:', '') + '/sq', { sq: vsq })
+			axios.post('http://localhost:3001/sq', { sq: vsq })
 			.then((response) => {
+				console.log("# Response of pattern roll trig",  response);
 			}).catch(function (error) {
 				console.error(error);
 			});

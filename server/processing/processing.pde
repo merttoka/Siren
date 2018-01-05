@@ -30,6 +30,6 @@ void draw() {
   prevTime = millis();
   
   // title
-  String txt_fps = String.format("Siren Editor [fps %6.2f]", frameRate);
+  String txt_fps = String.format("Siren Editor [fps %6.2f] [speed %6.2f]", frameRate, timeCoefficient);
   surface.setTitle(txt_fps);
 }

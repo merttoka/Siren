@@ -81,7 +81,8 @@ class SirenEditorCanvas extends Canvas {
       int timestamp_location = icmap(time, 
                                      0, canvas.maxTime, 
                                      0, canvas.cycleResolution*canvas.numberOfCycles);
-      if (timeCoefficient > 0 && timestamp_location > current_timestamp) {
+      if ((timeCoefficient > 0 && timestamp_location > current_timestamp) || 
+          (timeCoefficient < 0 && timestamp_location < current_timestamp)) {
          current_timestamp = timestamp_location;
          
          ArrayList<Message> messages = canvas.getMessagesAt(current_timestamp);
@@ -97,7 +98,7 @@ class SirenEditorCanvas extends Canvas {
       }
       if(time < 0) { 
         time += canvas.maxTime; 
-        current_timestamp = -1;
+        current_timestamp = canvas.cycleResolution*canvas.numberOfCycles + 1 ;
       }
     }
 
@@ -200,7 +201,7 @@ class SirenEditorCanvas extends Canvas {
   
       // draw timer
       float _x = x + map(time, 0, canvas.maxTime, 0, w);
-      pg.stroke(255, isPlaying ? 150 : 50);
+      pg.stroke(255, 0, 0, isPlaying ? 200 : 150);
       pg.line(_x, y, _x, y+h);
     }
     catch (ConcurrentModificationException e) {

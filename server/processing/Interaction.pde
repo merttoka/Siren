@@ -18,6 +18,13 @@ void keyPressed(KeyEvent e) {
     renewGrid = true;
   }
   
+  if (keyCode == UP) {
+    timeCoefficient += 0.2;  
+  } else if (keyCode == DOWN) {
+    timeCoefficient -= 0.2;
+  }
+  
+  
   // CTRL + SHIFT + S
   if (e.isShiftDown() && e.isControlDown() && int(e.getKey()) == 's'-'a'+1) {
     println("SAVE");
@@ -55,14 +62,14 @@ void keyPressed(KeyEvent e) {
   
   // Scrubbing right and left 
   if(keyCode == LEFT) {
-    int coeff = e.isShiftDown() ? 2 : 1;
+    int coeff = e.isShiftDown() ? 8 : 1;
     coeff *= isPlaying ? 2 : 1;
     time -= coeff*deltaTime;
     time = constrain(time, 0, canvas.maxTime);
     current_timestamp = icmap(time, 0, canvas.maxTime, 0, canvas.cycleResolution*canvas.numberOfCycles);
   }
   else if(keyCode == RIGHT) {
-    int coeff = e.isShiftDown() ? 2 : 1;
+    int coeff = e.isShiftDown() ? 8 : 1;
     time += coeff*deltaTime;
     time = constrain(time, 0, canvas.maxTime);
   }

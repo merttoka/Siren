@@ -54,7 +54,7 @@ void initWindow() {
      .setGroup(createPattern)
      .setText(canvas.name);
  
-  String[] filenames = listFileNames("C:/Users/Mert/Dropbox/Whalehouse/99s/");
+  String[] filenames = listFileNames("C:/Users/Mert/Dropbox/~siren/pool1/");
   cp5.addScrollableList("cp5_samples")
      .setCaptionLabel("Samples")
      .setPosition(marginx, 20+4*marginy)

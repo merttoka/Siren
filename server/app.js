@@ -12,11 +12,13 @@ const socketIo = require('socket.io');
 
 let exec = require('child_process').exec;
 let synchs = exec('cd ' + __dirname + ' && runhaskell sync.hs');
+let python = exec('cd ' + __dirname + ' && python3 trig_roll.py');
+// console.log(' ## -->   Python initialized @ ' + __dirname+'/trig_roll.py' );
 let jsonfile = require('jsonfile')
 
+let osc = require("osc");
+
 let dcon = socketIo.listen(3004);
-
-
 let dseq = socketIo.listen(4004);
 var chokidar = require('chokidar');
 var watcher = chokidar.watch('./server/processing/', {
@@ -53,6 +55,15 @@ class REPL {
       dcon.sockets.emit('dcon', ({dcon: data.toString('utf8')}));
     });
     console.log(" ## -->   GHC Spawned");
+
+    // python print
+    python.stdout.on('data', function(data){
+      console.log(data.toString());
+    });
+    // error
+    python.stderr.on('data', (data) => {
+      console.error(`node-python stderr:\n${data}`);
+    });
   }
 
   initTidal(config) {
@@ -77,12 +88,10 @@ class REPL {
 
         let dconSC = socketIo.listen(3006);
 
-        let osc = require("osc");
         let udpPort = new osc.UDPPort({
-            // This is where sclang is listening for OSC messages.
-            remoteAddress: "127.0.0.1",
-            remotePort: 3007,
-            metadata: true
+          remoteAddress: "127.0.0.1",
+          remotePort: 3007,
+          metadata: true
         });
 
         // Open the socket.
@@ -192,6 +201,19 @@ const Siren = () => {
   let UDPserver = dgram.createSocket("udp4");
 
   let tick = socketIo.listen(3003);
+  let py = socketIo.listen(5005);
+
+  let oscPy = require('osc')
+  let udpPortPy = new oscPy.UDPPort({
+    localAddress: "127.0.0.1",
+    localPort: 5005,
+    remoteAddress: "127.0.0.1",
+    remotePort: 3009,
+    metadata: true
+  });
+
+  // Open the socket.
+  udpPortPy.open();
 
   //Get tick from sync.hs Port:3002
   UDPserver.on("listening", function () {
@@ -257,7 +279,7 @@ const Siren = () => {
     reply.status(200).json({ pattern, sc_message });
   }
 
-  //// Not working
+  // Not working
   const generateConfig = (config,reply) => {
     let configfile = path.join(__dirname, '..', 'config', 'config.json');
     console.log(' - configfile: ', configfile);
@@ -279,31 +301,26 @@ const Siren = () => {
   });
 
   app.post('/processing', (req, reply) => {
-    // exec('processing-java --sketch=' + __dirname + '/processing --run');
+    exec('processing-java --sketch=' + __dirname + '/processing --run');
+
+    reply.status(200);
   });
 
   app.post('/sq', (req, reply) => {
     const {sq} = req.body;
 
     console.log(' ## -->   sq inbound:', sq);
-    let py    = spawn('python3', [__dirname+'/trig_roll.py']),
-        data  = [sq[0], sq[1], sq[2], sq[3], sq[4], sq[5]];  
-     // data  = [roll_name, roll_note, start, stop, speed, loop];
 
-    // python print
-    py.stdout.on('data', function(data){
-      console.log(data.toString());
-    });
-    // finish
-    py.stdout.on('end', function(){
-      console.log('Finished');
-    });
-    // error
-    py.stderr.on('data', (data) => {
-      console.error(`node-python stderr:\n${data}`);
-    });
-    py.stdin.write(JSON.stringify(data));
-    py.stdin.end();
+    let pythonMessage = {
+      address: "/roll",
+      args: [{
+        type: "s",
+        value: sq
+      }]
+    };
+    udpPortPy.send(pythonMessage);
+    
+    reply.status(200).json({'sq': sq});
   });
 
   app.post('/boot', (req, reply) => {

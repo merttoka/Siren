@@ -26,7 +26,8 @@ class Canvas extends Component {
       reload: false,
       play: false,
       content: 0,
-      maxContent: 3 // 0-vis, 1-shader1, 2-shader2
+      maxContent: 3, // 0-vis, 1-shader1, 2-shader2
+      isEditor: false
     }
   }
 
@@ -157,8 +158,15 @@ class Canvas extends Component {
        />
       );
     
+    // TODO: 
+    // Listen to sketch window events to toggle `isEditor`
     const handleClickProcessing = event => {
-      store.dispatch(startProcessing("localhost:3001"));
+      const ctx = this;
+      if(!ctx.state.isEditor) {
+        console.log("Interpreting Editor");
+        store.dispatch(startProcessing("localhost:3001"));
+        ctx.setState({isEditor: true});
+      }
     }
     const handleClickChange = event => {
       ctx.setState({content: (ctx.state.content+1) % ctx.state.maxContent});      
