@@ -14,7 +14,7 @@
   "sh42",
   "acdet"
  ],
- "active_s": "acdet",
+ "active_s": "er130",
  "patterns": [
   {
    "scene": "default",
@@ -3815,11 +3815,11 @@
     "",
     "",
     "acid `1`",
-    "",
+    "s",
     "acid `2`",
     "acid2 `1`",
     "",
-    "",
+    "jng `4`",
     "",
     "",
     "",
@@ -4174,7 +4174,7 @@
    "transition": "xfade",
    "cells": [
     "",
-    "",
+    "s",
     "acidlow `slow 3 $ every 1 (#sustain 5)` `1` `g2`",
     "acidlow `slow 3$ every 1 ((#sustain (scale 2 5 $ saw)).(#decay (scale 2 5 $ rand)))` `1` `g2`",
     "acidlow `slow 3 $ every 1 ((#sustain 6).(#decay \"<5 3>\"))` `1` ` g2`",
