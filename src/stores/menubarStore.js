@@ -10,6 +10,11 @@ import _ from 'lodash';
 import request from '../utils/request'
 // import { rmdirSync } from 'fs';
 
+import sceneStore from './sceneStore'
+import channelStore from './channelStore'
+import patternStore from './patternStore'
+
+
 class MenubarStore {
     // 0 = inactive
     // 1 = ready
@@ -78,6 +83,88 @@ class MenubarStore {
         this.history_folders = hf;
         console.log(this.history_folders);
     }
+    @action generateScene(recordedObjects) { 
+        // ADD SCENE
+        const newSceneName = "GEN";
+        let newNameIndex = 0;
+        while (_.indexOf(sceneStore.scene_list, newSceneName + newNameIndex) > 0) newNameIndex++; 
+        sceneStore.addScene(newSceneName + newNameIndex);
+        
+        // CHANGE SCENE
+        sceneStore.changeActiveScene(newSceneName + newNameIndex);
+        // add silence channel
+        patternStore.addPattern("S", sceneStore.active_scene, "silence");
+
+
+        if (recordedObjects.length > 0) { 
+            const startTime = recordedObjects[0].timestamp;
+            const endTime = recordedObjects[recordedObjects.length - 1].timestamp;
+
+            let newPatternName = "PAT";
+            let newPatternIndex = 0;
+
+            // PARSE RECORDED PATTERS
+            recordedObjects.forEach(element => {
+                
+                // TODO: ALLOW SC CHANNELS
+                if (element.type === "Tidal") { 
+                    let channelName = '';
+                    let stepNumber = 0;
+                    
+                    // TIME (millis)
+                    let time = element.timestamp - startTime;
+
+                    // PATTERN
+                    let pat = _.replace(element.pattern, '\n', '');
+
+                    // DETERMINE CHANNEL
+                    let re = new RegExp("^.+?\\$", "g");
+                    let match = re.exec(pat);
+                    if (match !== null && match[0] !== undefined) { 
+                        channelName = _.trim(match[0].substring(0, match[0].length - 1));
+                        pat = pat.substring(match[0].length, pat.length);
+                        channelStore.addChannel(channelName, "Tidal", _.ceil(endTime/1000-startTime/1000), "", 2, false);
+    
+                        // DETERMINE STEP
+                        stepNumber = _.toInteger(time / 1000.);
+
+                        // IF SILENCED OR HUSHED
+                        if (pat.includes("silence")) {
+                            _.find(channelStore.channels, { 'name': channelName, 'scene': sceneStore.active_scene }).cells[stepNumber] = "S";
+                        }
+                        else { 
+                            // DETERMINE MAIN PATTERN AND PARAMETERS
+                            let mainPattern = "";
+                            let param1 = "";
+                            let param2 = "";
+                            re = new RegExp('\\$[ ]*(n|s)[o\\W][^m].*?(#|\\n)', "g");
+                            match = re.exec(pat);
+                            if (match !== null && match[0] !== undefined) {
+                                mainPattern = "`x` " + _.trim(match[0].substring(1, match[0].length - 1)) + " `y`";
+                                param1 = pat.substring(0, match.index + 1);
+                                param2 = pat.substring(match.index + match[0].length - 1, pat.length);
+                                
+                                // see if exists
+                                // add if not by parameterizing before and after
+                                let patternItem = _.find(patternStore.patterns, { 'text': mainPattern, 'scene': sceneStore.active_scene });
+                                if (patternItem === undefined) { 
+                                    patternStore.addPattern(newPatternName + newPatternIndex, sceneStore.active_scene, mainPattern, 'x,y');
+                                    newPatternIndex += 1;
+                                }
+                                patternItem = _.find(patternStore.patterns, { 'text': mainPattern, 'scene': sceneStore.active_scene });
+    
+                                // PLACE IT IN THE GRID
+                                let cellValue = patternItem.name + " `" + param1 + "` `" + param2 + "`";
+                                _.find(channelStore.channels, { 'name': channelName, 'scene': sceneStore.active_scene }).cells[stepNumber] = cellValue;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+
     createRMSShape_Left() {
         let c = document.getElementById("RMSVis_Left");
         let ctx = c.getContext("2d");
@@ -158,16 +245,16 @@ class MenubarStore {
 
     @action record() {
         request.post('http://localhost:3001/record', {
-                'isRecord': this.recording
-            })
-            .then(action((response) => {
-                if (response.status === 200 && response.data !== undefined) {
-                    this.updateHistoryFolders(response.data.history_folders);
-                }
-            })).catch(action((error) => {
-                //this.recording = false;
-                console.error(" ## Server errors: ", error);
-            }));
+            'isRecord': this.recording
+        })
+        .then(action((response) => {
+            if (response.status === 200 && response.data !== undefined) {
+                this.updateHistoryFolders(response.data.history_folders);
+            }
+        })).catch(action((error) => {
+            //this.recording = false;
+            console.error(" ## Server errors: ", error);
+        }));
     }
 
     @action play() {
@@ -175,7 +262,6 @@ class MenubarStore {
                 'isPlay': this.playing
             })
             .then(action((response) => {
-
                 // if (response.status === 200) {
                 //     console.log(" ## Recording.");
                 // }
@@ -189,7 +275,17 @@ class MenubarStore {
             }));
     }
 
-
+    @action generateNewScene() { 
+        request.post('http://localhost:3001/generateScene', {
+            'fileIndex': 0
+        })
+        .then(action((response) => {
+            this.generateScene(response.data.recordedObjects);
+        })).catch(action((error) => {
+            this.playing = false;
+            console.error(" ## Server errors: ", error);
+        }));
+    }
 }
 
 export default new MenubarStore();

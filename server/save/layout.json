@@ -1,16 +1,6 @@
 {
  "layouts": [
   {
-   "w": 9,
-   "h": 6,
-   "x": 0,
-   "y": 14,
-   "i": "sc_console",
-   "moved": false,
-   "static": false,
-   "isVisible": true
-  },
-  {
    "w": 15,
    "h": 6,
    "x": 9,
@@ -41,6 +31,16 @@
    "isVisible": true
   },
   {
+   "w": 9,
+   "h": 6,
+   "x": 0,
+   "y": 14,
+   "i": "tidal_globals",
+   "moved": false,
+   "static": false,
+   "isVisible": true
+  },
+  {
    "w": 15,
    "h": 8,
    "x": 9,
@@ -51,11 +51,11 @@
    "isVisible": false
   },
   {
-   "w": 5,
+   "w": 9,
    "h": 6,
-   "x": 19,
+   "x": 0,
    "y": 14,
-   "i": "tidal_globals",
+   "i": "sc_console",
    "moved": false,
    "static": false,
    "isVisible": false
@@ -283,7 +283,7 @@
     "i": "tidal_globals",
     "moved": false,
     "static": false,
-    "isVisible": false
+    "isVisible": true
    },
    {
     "w": 24,

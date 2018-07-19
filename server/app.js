@@ -397,6 +397,39 @@ class REPL {
   }
 }
 
+
+/*
+
+NAME $ `x` $ PAT $ `y`
+NAME $ `x` $ PAT $ `y`
+
+NAME TRANS $ `x` $ PAT $ `y`
+t1 (clutchIn 2) $ `x` $ PAT $ `y`
+
+$ s "bd" 
+$ s "bd" # n "0 1"
+$ s "bd" # n (run 2)
+$ s "bd" # note "0 1"
+$ s "bd" # note (run 2)
+
+$ sound "bd" 
+$ sound "bd" # n "0 1"
+$ sound "bd" # n (run 2)
+$ sound "bd" # note "0 1"
+$ sound "bd" # note (run 2)
+
+$ n "0 1"   # s "bd"
+$ n (run 2) # s "bd"
+$ n "0 1"   # sound "bd"
+$ n (run 2) # sound "bd"
+
+$ note "0 1"    # s "bd"
+$ note (run 2)  # s "bd"
+$ note "0 1"    # sound "bd"
+$ note (run 2)  # sound "bd"
+
+*/
+
 const SirenComm = {
   siren_console: new REPL()
 }
@@ -418,7 +451,7 @@ const Siren = () => {
 
     if (isRecording) {
       let tidalobj = {
-        pattern: pat,
+        pattern: _.replace(pat, '\n', ''),
         timestamp: Date.now(),
         type: 'Tidal'
       };
@@ -620,17 +653,6 @@ const Siren = () => {
           timestamp: new Date().getMilliseconds()
         });
       }
-      // else if (channel.type === "TidalV") {
-      //   let chn = channel.name.substring(1, channel.name.length);
-      //   transitionHolder = "x" + chn + " $ ";
-      //   pattern = transitionHolder + newCommand;
-      //   tidalPatternQueue.push(pattern);
-      //   reply.status(200).json({
-      //     pattern: pattern,
-      //     cid: channel.cid,
-      //     timestamp: new Date().getMilliseconds()
-      //   });
-      // }
       else if (channel.type === '') {
         pattern = newCommand;
         tidalPatternQueue.push(pattern);
@@ -701,6 +723,33 @@ const Siren = () => {
     isPlaying = false;
   }
 
+  // Generates a new scene from the recorded file
+  const generateNewScene = (fileIndex, reply) => { 
+                            // TODO: get the filename from frontend
+    
+    console.log("INDEX = ", fileIndex);
+    
+    
+                            // get all recording names
+    let history_json = [];
+    fs.readdirSync('./server/save/recordings/').forEach(file => {
+      history_json.push(file);
+    });
+
+    console.log("HiSTJSON = ", history_json);
+
+    if (history_json.length > 0) { 
+      let selectedFile = './server/save/recordings/' + history_json[fileIndex].toString();
+      let recordedObjects = jsonfile.readFileSync(selectedFile);
+      
+      console.log("RECORD = ", recordedObjects);
+
+      reply.status(200).json({
+        recordedObjects: recordedObjects
+      });
+    }
+  }
+
   const playHistory = () => {
     let history_json = [];
     isPlaying = true;
@@ -708,7 +757,7 @@ const Siren = () => {
       history_json.push(file);
     });
     let selectedFile = './server/save/recordings/' + history_json[history_json.length - 1].toString();
-    console.log(selectedFile);
+    // console.log(selectedFile);
     commandobj = jsonfile.readFileSync(selectedFile);
     sendHistoryPatternPrepare(); //start recursive loop
   }
@@ -1044,6 +1093,17 @@ const Siren = () => {
       reply.sendStatus(500);
     }
   });
+  app.post('/generateScene', (req, reply) => {
+    try {
+      const {
+        fileIndex
+      } = req.body;
+      generateNewScene(fileIndex, reply);
+    } catch (error) {
+      reply.sendStatus(500);
+    }
+  });
+
 
   // TODO: FIX 
   app.get('/quit', (req, reply) => {

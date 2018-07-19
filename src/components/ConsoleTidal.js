@@ -13,24 +13,21 @@ import '../utils/lexers/haskell.css';
 import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 
-
 @inject('consoleStore')
 @observer
 export default class ConsoleTidal extends React.Component {
 
   // GHC
   handleGHCSubmit = (editor, event) => {
-    const body = event.target.value;
-    
-    let expr = "";
     if (event.keyCode === 13 && event.ctrlKey) {
+      let expr = "";
       
       if (editor.somethingSelected()) {
-        expr = body;
+        // selected text
+        expr = event.target.value;
       }
       else {
         const line = editor.getCursor().line;
-        const ch = editor.getCursor().ch;
   
         if (editor.getLine(line) !== "") {
           let startLine = line;
@@ -52,25 +49,10 @@ export default class ConsoleTidal extends React.Component {
         }
       }
 
+      // execute the line
+      if (expr !== "")
+        this.props.consoleStore.submitGHC(expr);
     }
-    else if (event.keyCode === 13 && event.altKey) {
-      
-      const l = editor.getCursor().line;
-      
-      expr = editor.getRange({ line: l, ch: 0 }, { line: l, ch: l.length-1 });
-
-      if (expr !== '') { 
-        let handle = editor.markText(
-          { line: l, ch: 0 },
-          { line: l, ch: l.length-1 },
-          { className: 'CodeMirror-execution' });
-        _.delay(() => { handle.clear(); }, 500);
-      }
-    }
-
-    // execute the line
-    if (expr !== "")
-      this.props.consoleStore.submitGHC(expr);
 
     event.preventDefault();
     return false;
