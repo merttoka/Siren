@@ -4,7 +4,7 @@
    "w": 15,
    "h": 6,
    "x": 9,
-   "y": 14,
+   "y": 34,
    "i": "tidal_log",
    "moved": false,
    "static": false,
@@ -24,7 +24,7 @@
    "w": 15,
    "h": 14,
    "x": 9,
-   "y": 0,
+   "y": 20,
    "i": "tidal_roll",
    "moved": false,
    "static": false,
@@ -42,13 +42,13 @@
   },
   {
    "w": 15,
-   "h": 8,
+   "h": 20,
    "x": 9,
    "y": 0,
    "i": "graphics",
    "moved": false,
    "static": false,
-   "isVisible": false
+   "isVisible": true
   },
   {
    "w": 9,

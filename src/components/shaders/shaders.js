@@ -598,11 +598,10 @@ export const shaders = Shaders.create({
             S1.w + evolutions[0][3][0] * 10.);        // shape 0 / 1
           float r2 = superformula(rho, 1.0, 1.0,
             S2.x + evolutions[0][1][0] * 7.,        // coarse 1 / 12
-            S2.y + evolutions[0][1][1] * 7.,       // speed -10 / 10
+            S2.y + evolutions[0][1][1] * 7.,        // speed -10 / 10
             S2.z + evolutions[0][1][2] * 10.,       // gain   0 / 1
             S2.w + evolutions[0][1][3] * 10.);      // sustain 0 / 1
 
-          //same as above but optimized a bit
           d -= r2 * sqrt(r1 * r1 * (1.0 - sn * sn) + sn * sn);
 
           return d;

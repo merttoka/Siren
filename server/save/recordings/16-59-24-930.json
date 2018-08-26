@@ -1,0 +1,47 @@
+[
+ {
+  "pattern": "d1 $ n \"0 ~ ~ 1\" # s \"pc2\"",
+  "timestamp": 1534341532469,
+  "type": "Tidal"
+ },
+ {
+  "pattern": "d2 $ n \"{1 <0 ~ ~> 0 ~}%4\" # s \"bass0\" # sirenChan 1\n",
+  "timestamp": 1534341536876,
+  "type": "Tidal"
+ },
+ {
+  "pattern": "d1 $ every 3 (rev) $ n \"0 ~ ~ 1\" # s \"pc2\" # coarse 3\n",
+  "timestamp": 1534341540851,
+  "type": "Tidal"
+ },
+ {
+  "pattern": "d3 $ every 1 ((#gain \"0.9 0.85 1.04 1\").(#end \"1 0.2 0.9\")) $ n \"{1 <0 ~ ~> 0 ~}%4\" # s \"pc1\" # sirenChan 2\n",
+  "timestamp": 1534341543291,
+  "type": "Tidal"
+ },
+ {
+  "pattern": "d2 $ every 2 ((#speed \"1 3 5 -1\").(#pan sine)) $ n \"{1 <0 ~ ~> 0 ~}%4\" # s \"bass0\" # sirenChan 1\n",
+  "timestamp": 1534341547972,
+  "type": "Tidal"
+ },
+ {
+  "pattern": "d1 $ modNote 1 ((#s \"gen0\").(# hall 0.4)) $ every 3 (rev) $ n \"0 ~ ~ 1\" # s \"pc2\" # coarse 3\n",
+  "timestamp": 1534341549920,
+  "type": "Tidal"
+ },
+ {
+  "pattern": "d3 $ every 2 ((#gain \"0.9 0.85 1.04 1\").(#end \"1 0.2 0.9\")) $ n \"{1 <0 ~ ~> 0 ~}%4\" # s \"pc1\" #coarse 2 # sirenChan 2\n",
+  "timestamp": 1534341552602,
+  "type": "Tidal"
+ },
+ {
+  "pattern": "d3 $ every 2 (#s \"3fx\") $ every 3 ((#gain \"0.9 0.85 1.04 1\").(#end \"1 0.2 0.9\")) $ n \"{1 <0 ~ ~> 0 ~}%4\" # s \"pc1\" #coarse 2 # sirenChan 2\n",
+  "timestamp": 1534341556990,
+  "type": "Tidal"
+ },
+ {
+  "pattern": "d1 $ n \"0 ~ ~ 1\" # s \"pc2\"",
+  "timestamp": 1534341561581,
+  "type": "Tidal"
+ }
+]

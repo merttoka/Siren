@@ -1,10 +1,10 @@
 /* CSS Variables */
 
 :root {
-  --tidal-color: rgb(42, 85, 110);
+  --tidal-color: #2a556e;
   --cps-color: rgb(70, 117, 60);
-  --sc-color: rgb(131, 57, 34);
-  --global-color: rgba(255, 255, 255, 0.4);
+  --sc-color: #833922;
+  --global-color: #ffffff66;
   --record-color: #bf2618;
   --layout-background: rgb(40, 40, 40);
   --global-white: rgb(200, 200, 200);

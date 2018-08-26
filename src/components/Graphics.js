@@ -152,7 +152,7 @@ export default class Graphics extends React.Component {
           res={[dim[0], dim[1]]}
           rollStore={this.props.rollStore} />
         </Bus>
-        <Lines>
+        {/* <Lines> */}
           <BarrelBlurLoop>
             {/* <Patches> */}
             {/* <Halftone> */}
@@ -172,7 +172,7 @@ export default class Graphics extends React.Component {
             {/* </Halftone> */}
             {/* </Patches> */}
           </BarrelBlurLoop>
-        </Lines>
+        {/* </Lines> */}
       </Surface>     
     );
   }

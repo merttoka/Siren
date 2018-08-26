@@ -4,5 +4,17 @@
   "transformer": "",
   "modifier": "",
   "param": ""
+ },
+ {
+  "channels": "",
+  "transformer": "slow 2 $ ",
+  "modifier": "# gain 0.9",
+  "param": ""
+ },
+ {
+  "channels": "",
+  "transformer": "modNote 2 (# s \"gen0\") $ slow 2 $ ",
+  "modifier": "# coarse 4",
+  "param": ""
  }
 ]

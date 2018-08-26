@@ -13,9 +13,10 @@
   "sh1",
   "sh42",
   "acdet",
-  "GEN0"
+  "GEN0",
+  "GEN1"
  ],
- "active_s": "GEN0",
+ "active_s": "GEN1",
  "patterns": [
   {
    "scene": "default",
@@ -1000,6 +1001,24 @@
    "name": "PAT14",
    "params": "x,y",
    "text": "`x` n \"0 3 1 3\" `y`"
+  },
+  {
+   "scene": "GEN1",
+   "name": "S",
+   "params": "",
+   "text": "silence"
+  },
+  {
+   "scene": "GEN1",
+   "name": "PAT0",
+   "params": "x,y",
+   "text": "`x` n \"0 ~ ~ 1\" `y`"
+  },
+  {
+   "scene": "GEN1",
+   "name": "PAT1",
+   "params": "x,y",
+   "text": "`x` n \"{1 <0 ~ ~> 0 ~}%4\" `y`"
   }
  ],
  "channels": [
@@ -5163,6 +5182,117 @@
    "executed": false,
    "selected": false,
    "cid": 86
+  },
+  {
+   "scene": "GEN1",
+   "activeSceneIndex": 0,
+   "name": "d1",
+   "type": "Tidal",
+   "steps": 18,
+   "rate": 2,
+   "time": 0,
+   "transition": "",
+   "cells": [
+    "",
+    "PAT0 ` every 3 (rev) $` `# s \"pc2\" # coarse 3`",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "S",
+    "",
+    "PAT0 ` modNote 1 ((#s \"gen0\").(# hall 0.4)) $ every 3 (rev) $` `# s \"pc2\" # coarse 3`",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "gate": true,
+   "solo": false,
+   "mute": false,
+   "loop": true,
+   "executed": false,
+   "selected": false,
+   "cid": 87
+  },
+  {
+   "scene": "GEN1",
+   "activeSceneIndex": 1,
+   "name": "d2",
+   "type": "Tidal",
+   "steps": 18,
+   "rate": 2,
+   "time": 0,
+   "transition": "",
+   "cells": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "PAT1 ` every 2 ((#speed \"1 3 5 -1\").(#pan sine)) $` `# s \"bass0\" # sirenChan 1`",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "gate": true,
+   "solo": false,
+   "mute": false,
+   "loop": true,
+   "executed": false,
+   "selected": false,
+   "cid": 88
+  },
+  {
+   "scene": "GEN1",
+   "activeSceneIndex": 2,
+   "name": "d3",
+   "type": "Tidal",
+   "steps": 18,
+   "rate": 2,
+   "time": 0,
+   "transition": "",
+   "cells": [
+    "",
+    "",
+    "",
+    "PAT1 ` every 1 ((#gain \"0.9 0.85 1.04 1\").(#end \"1 0.2 0.9\")) $` `# s \"pc1\" # sirenChan 2`",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "PAT1 ` every 2 ((#gain \"0.9 0.85 1.04 1\").(#end \"1 0.2 0.9\")) $` `# s \"pc1\" #coarse 2 # sirenChan 2`",
+    "S",
+    "",
+    "",
+    "PAT1 ` every 2 (#s \"3fx\") $ every 3 ((#gain \"0.9 0.85 1.04 1\").(#end \"1 0.2 0.9\")) $` `# s \"pc1\" #coarse 2 # sirenChan 2`",
+    ""
+   ],
+   "gate": true,
+   "solo": false,
+   "mute": false,
+   "loop": true,
+   "executed": false,
+   "selected": false,
+   "cid": 89
   }
  ]
 }
